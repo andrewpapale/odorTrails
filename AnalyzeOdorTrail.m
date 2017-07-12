@@ -1,7 +1,7 @@
-
+% 2017-07-12 AndyP
+% Analyze one session 
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
-
 
 C = [];
 nC = [];
