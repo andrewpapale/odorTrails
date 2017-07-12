@@ -42,11 +42,10 @@ nx0(~notedge)=nan;
 ny0(~notedge)=nan;
 
 mm = position_results.MouseMean(startFrame:end);
-mm(~k)=nan;
 k = ones(length(x));
+mm(mm==0)=nan;
 Nmm = log10(mm)./nanmax(log10(mm));
-Nmm(Nmm==0)=nan;
-k(Nmm < 0.75*nanmean(Nmm)) = 0;
+k(Nmm < 0.5*nanmean(Nmm) | isnan(Nmm)) = 0;
 x0(~k)=nan;
 y0(~k)=nan;
 nx0(~k)=nan;
@@ -60,46 +59,28 @@ k(mL>8)=0; % mice are <8cm long
 nx0(~k)=nan;
 ny0(~k)=nan;
 
-x0(notedge)= medfilt1(x0(notedge),3,'omitnan','truncate');
-y0(notedge)= medfilt1(y0(notedge),3,'omitnan','truncate');
-nx0(notedge)= medfilt1(nx0(notedge),3,'omitnan','truncate');
-ny0(notedge)= medfilt1(ny0(notedge),3,'omitnan','truncate');
+nS = ceil(postSmoothing/dT);
+x0(notedge)= medfilt1(x0(notedge),nS,'omitnan','truncate');
+y0(notedge)= medfilt1(y0(notedge),nS,'omitnan','truncate');
+nx0(notedge)= medfilt1(nx0(notedge),nS,'omitnan','truncate');
+ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
 
 dx = dxdt(x0,dT,window,postSmoothing);
 dy = dxdt(y0,dT,window,postSmoothing);
-V = sqrt(dx.^2+dy.^2)./11.2;
-k = V < 80; % cm/s
+V = sqrt(dx.^2+dy.^2)./11.2; % cm/s
+k = V < 80 & dx < 1000 & dy < 1000;
 x0(~k)=nan;
 y0(~k)=nan;
 nx0(~k)=nan;
 ny0(~k)=nan;
-% %
+
+% % % %
 dnx = dxdt(nx0,dT,window,postSmoothing);
 dny = dxdt(ny0,dT,window,postSmoothing);
-nV = sqrt(dnx.^2+dny.^2)./11.2;
-k = nV < 160; % cm/s
+nV = sqrt(dnx.^2+dny.^2)./11.2; % cm/s
+k = nV < 160 & dnx < 1000 & dny < 1000;
 nx0(~k)=nan;
 ny0(~k)=nan;
-
-mm = position_results.MouseMean(startFrame:end);
-mm(~k)=nan;
-k = ones(length(x));
-Nmm = log10(mm)./nanmax(log10(mm));
-Nmm(Nmm==0)=nan;
-k(Nmm < 0.75*nanmean(Nmm)) = 0;
-x0(~k)=nan;
-y0(~k)=nan;
-nx0(~k)=nan;
-ny0(~k)=nan;
-
-
-% nS = ceil(postSmoothing/dT);
-% x0(notedge) = nanfastsmooth(x0(notedge),nS,1,1);
-% y0(notedge) = nanfastsmooth(y0(notedge),nS,1,1);
-% nx0(notedge) = nanfastsmooth(nx0(notedge),nS,1,1);
-% ny0(notedge) = nanfastsmooth(ny0(notedge),nS,1,1);
-% nx0(~notedge)=nan;
-% ny0(~notedge)=nan;
 
 
 if doTest
