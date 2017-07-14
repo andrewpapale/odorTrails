@@ -1,0 +1,31 @@
+
+% 2017-07-13 AndyP
+% This script centers spots and computes the average measure 'measure' 
+
+nM = length(unique(mouse));
+nS = max(sess);
+window = 336; % cm
+window = window./11.2;
+nB = 1;
+
+H = [];
+for iM=1:nM
+    for iS=1:nS
+        k0 = mouse==iM & sess==iS;
+        kT = mouseT==iM & sessT==iS;
+        
+        nx0 = nx(k0);
+        ny0 = ny(k0);
+        
+        xT0 = nanmedian(xT(kT));
+        yT0 = nanmedian(yT(kT));
+        
+        kW = nx0 >= xT0-window & nx0 <= xT0+window & ny0 >= yT0-window & ny0 <= yT0+window;
+        
+        H0 = histcn([nx0(kW),ny0(kW)],linspace(xT0-window,xT0+window,nB),linspace(yT0-window,yT0+window,nB),'AccumData',znidphi(kW),'fun',@nanmean);
+        H = cat(3,H,H0);
+        
+    end
+end
+
+

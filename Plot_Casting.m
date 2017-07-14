@@ -1,4 +1,4 @@
-multipleSess = false;
+multipleSess = true;
 
 
 if multipleSess
@@ -8,7 +8,7 @@ if multipleSess
         for iS=1:nS
             k = mouse==iM & sess==iS;
             k2 = mouseT==iM & sessT==iS;
-            casting = find(znidphi(k) > 0.5);
+            casting = find(znC(k) > 0.5);
             iC=1;
             if ~isempty(k)
                 while iC<length(casting);
@@ -20,7 +20,7 @@ if multipleSess
                         plot(x(k0),y(k0),'k.'); scatter(nx(k0),ny(k0),[],znC(k0),'filled');
                         set(gca,'XLim',[1 1250],'YLim',[1 1000]);
                         colorbar;
-                        caxis([-0.5 0.5]);
+                        caxis([-0.01 0.01]);
                         pause;
                         clf;
                         iC=iC+101;

@@ -85,7 +85,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 
 homedir = cd;
 
-readXLS = true;
+readXLS = false;
 pathType = 'Y';
 postSmoothing = 0.1; % s
 window = 1; % s
@@ -368,10 +368,10 @@ for iD=1:nD
     Ynp = cat(1,Ynp,yT0(In));
     
     
-    C0 = Tortuosity(x0,y0,dtime,window,postSmoothing);
+    C0 = Tortuosity(dx,dy,dtime,window,postSmoothing);
     C = cat(1,C,C0);
     %
-    nC0 = Tortuosity(nx0,ny0,dtime,window,postSmoothing);
+    nC0 = Tortuosity(ndx,ndy,dtime,window,postSmoothing);
     nC = cat(1,nC,nC0);
     
     % compute idphi
