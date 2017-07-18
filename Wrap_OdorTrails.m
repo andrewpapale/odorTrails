@@ -1,6 +1,6 @@
 function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,...
-    nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm] = Wrap_OdorTrails
-%function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2] = Wrap_OdorTrails
+    nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm,inR] = Wrap_OdorTrails
+%function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm,inR] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
@@ -86,7 +86,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 
 homedir = cd;
 
-readXLS = false;
+readXLS = true;
 pathType = 'Y';
 postSmoothing = 0.1; % s
 window = 1; % s
@@ -299,17 +299,17 @@ dTarm = cell(3,1);
 dnTarm = cell(3,1);
 for iD=1:nD
     cd(homedir);
-    fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
-    load(positFiles(iD).name,'position_results');
-    load(trailFiles(iD).name,'xT','yT','data');
-    load(startFiles(iD).name,'startFrame');
+     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
+     load(positFiles(iD).name,'position_results');
+     load(trailFiles(iD).name,'xT','yT','data');
+     load(startFiles(iD).name,'startFrame');
     
     if strcmp(pathType,'Y')
         load(compFiles(iD).name,'vec','xC','yC','outside','inside');
     end
     
-    % code to process the position output from optimouse
-    [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
+    code to process the position output from optimouse
+     [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
     
     % code to get mouse1 / sess1, should be identical to mouse/sess from
     % xls file
@@ -328,8 +328,8 @@ for iD=1:nD
     
     
     % Get trail coordinates.  Note y,x correctly switched from trailFile data.
-    xT0 = yT;
-    yT0 = xT;
+     xT0 = yT;
+     yT0 = xT;
     
     xT1 = cat(1,xT1,xT0);
     yT1 = cat(1,yT1,yT0);
@@ -463,7 +463,7 @@ for iD=1:nD
            end
        end
            
-    end
+     end
     if readXLS
         mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); %#ok<UNRCH>
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));
