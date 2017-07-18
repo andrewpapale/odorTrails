@@ -54,8 +54,8 @@ end
 outside = sqrt((xD-xC).^2+(yD-yC).^2)>radius;
 inside = sqrt((xD-xC).^2+(yD-yC).^2)<=radius;
 
-P1 = plot(yT(outside),xT(outside),'g.');
-P2 = plot(yT(inside),xT(inside),'r.');
+P1 = plot(xD(outside),yD(outside),'g.');
+P2 = plot(xD(inside),yD(inside),'r.');
 
 pause;
 delete(P1);
