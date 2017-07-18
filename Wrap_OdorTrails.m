@@ -1,6 +1,5 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,...
-    nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm,inR] = Wrap_OdorTrails
-%function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm,inR] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,arm,dTarm,dnTarm,inR] = Wrap_OdorTrails
+%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,arm,dTarm,dnTarm,inR] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
@@ -293,8 +292,7 @@ dotC = [];
 inR = [];
 theta1 = [];
 theta2 = [];
-xTarm = cell(3,1);
-yTarm = cell(3,1);
+arm = cell(3,1);
 dTarm = cell(3,1);
 dnTarm = cell(3,1);
 for iD=1:nD
@@ -308,7 +306,7 @@ for iD=1:nD
         load(compFiles(iD).name,'vec','xC','yC','outside','inside');
     end
     
-    code to process the position output from optimouse
+%    code to process the position output from optimouse
      [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
     
     % code to get mouse1 / sess1, should be identical to mouse/sess from
@@ -436,10 +434,10 @@ for iD=1:nD
        
        thetaAll = cat(1,thetaA,thetaB,thetaC);
        [mintheta,ixmin] = min(thetaAll);
-       theta1 = cat(1,theta1,mintheta);
+       theta1 = cat(1,theta1,repmat(mintheta,[length(x0),1]));
        thetaAll(ixmin)=[];
        [mintheta,~]=min(thetaAll);
-       theta2 = cat(1,theta2,mintheta);
+       theta2 = cat(1,theta2,repmat(mintheta,[length(x0),1]));
        
        
        outside1 = zeros(size(data));
@@ -453,12 +451,22 @@ for iD=1:nD
        for iT=1:CC.NumObjects
            if length(CC.PixelIdxList{iT})>1000
                [i,j] = ind2sub(size(data),CC.PixelIdxList{iT});
-               xTarm{iC} = cat(1,xTarm{iC},j);
-               yTarm{iC} = cat(1,yTarm{iC},i);
-               for iP=1:length(x0)
-                   dTarm{iC} = cat(1,dTarm{iC},nanmin(sqrt((x0(iP)-xTarm{iC}).^2+(y0(iP)-yTarm{iC}).^2)));
-                   dnTarm{iC} = cat(1,dnTarm{iC},nanmin(sqrt((nx0(iP)-xTarm{iC}).^2+(ny0(iP)-yTarm{iC}).^2)));
+               keepV = zeros(length(xT0),1);
+               for iP=1:length(xT0)
+                    if xT0(iP)==j & yT0(iP)==x; %#ok<AND2>
+                        keepV(iP)=1;
+                    end
                end
+               arm{iC} = cat(1,arm{iC},keepV);
+               temp1 = nan(length(x0),1);
+               temp2 = nan(length(x0),1);
+               for iP=1:length(x0)
+                   temp1(iP) = nanmin(sqrt((x0(iP)-j).^2+(y0(iP)-i).^2));
+                   temp2(iP) = nanmin(sqrt((nx0(iP)-j).^2+(ny0(iP)-i).^2));
+                   
+               end
+               dTarm{iC} = cat(1,dTarm{iC},temp1);
+               dnTarm{iC} = cat(1,dnTarm{iC},temp2);
                iC = iC+1;
            end
        end
