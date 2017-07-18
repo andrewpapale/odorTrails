@@ -26,15 +26,10 @@ y = position_results.mouseCOM(startFrame:end,2);
 nx = position_results.nosePOS(startFrame:end,1);
 ny = position_results.nosePOS(startFrame:end,2);
 
-k = y < 1017.50 & x > 0.50  & x < 1280.50 & y > 0.50;
-
 x0 = x;
 y0 = y;
-x0(~k)=nan;
-y0(~k)=nan;
 
-
-notedge = x > 50+0.50 & x < (1280.50-50) & y > 50+0.50 & y < (1017.50-50);
+notedge = x > 50+0.50 & x < (1280.50-50) & y > 50+0.50 & y < (1018.50-50);
 
 nx0 = nx;
 ny0 = ny;
@@ -68,7 +63,7 @@ ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
 dx = dxdt(x0,dT,window,postSmoothing);
 dy = dxdt(y0,dT,window,postSmoothing);
 V = sqrt(dx.^2+dy.^2)./11.2; % cm/s
-k = V < 80 & dx < 1000 & dy < 1000;
+k = V < 200 & dx < 1000 & dy < 1000;
 x0(~k)=nan;
 y0(~k)=nan;
 nx0(~k)=nan;
@@ -78,7 +73,7 @@ ny0(~k)=nan;
 dnx = dxdt(nx0,dT,window,postSmoothing);
 dny = dxdt(ny0,dT,window,postSmoothing);
 nV = sqrt(dnx.^2+dny.^2)./11.2; % cm/s
-k = nV < 160 & dnx < 1000 & dny < 1000;
+k = nV < 200 & dnx < 1000 & dny < 1000;
 nx0(~k)=nan;
 ny0(~k)=nan;
 

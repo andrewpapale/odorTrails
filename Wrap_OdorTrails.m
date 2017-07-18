@@ -1,5 +1,6 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC] = Wrap_OdorTrails
-%function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,...
+    nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm] = Wrap_OdorTrails
+%function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
@@ -85,7 +86,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 
 homedir = cd;
 
-readXLS = true;
+readXLS = false;
 pathType = 'Y';
 postSmoothing = 0.1; % s
 window = 1; % s
@@ -180,6 +181,11 @@ end
 positFiles = dir('*_positions.mat');
 trailFiles = dir('*-Odor-Trail.mat');
 startFiles = dir('*-StartFrame.mat');
+
+if strcmp(pathType,'Y')
+    compFiles = dir('*-ConnectingPoint.mat');
+    assert(length(compFiles)==length(trailFiles),'error needs to be a connecting point file for each position file');
+end
 
 assert(length(positFiles)==length(trailFiles),'error needs to be an odor trail file for each position file');
 assert(length(startFiles)==length(trailFiles),'error needs to be a start time for each position file');
@@ -279,12 +285,28 @@ znidphi = [];
 dnT = [];
 Xnp = [];
 Ynp = [];
+dnTc = [];
+dTc = [];
+dotA = [];
+dotB = [];
+dotC = [];
+inR = [];
+theta1 = [];
+theta2 = [];
+xTarm = cell(3,1);
+yTarm = cell(3,1);
+dTarm = cell(3,1);
+dnTarm = cell(3,1);
 for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
     load(positFiles(iD).name,'position_results');
     load(trailFiles(iD).name,'xT','yT','data');
     load(startFiles(iD).name,'startFrame');
+    
+    if strcmp(pathType,'Y')
+        load(compFiles(iD).name,'vec','xC','yC','outside','inside');
+    end
     
     % code to process the position output from optimouse
     [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
@@ -368,10 +390,10 @@ for iD=1:nD
     Ynp = cat(1,Ynp,yT0(In));
     
     
-    C0 = Tortuosity(x0,y0,dtime,window,postSmoothing);
+    C0 = Tortuosity(dx,dy,dtime,window,postSmoothing);
     C = cat(1,C,C0);
     %
-    nC0 = Tortuosity(nx0,ny0,dtime,window,postSmoothing);
+    nC0 = Tortuosity(ndx,ndy,dtime,window,postSmoothing);
     nC = cat(1,nC,nC0);
     
     % compute idphi
@@ -387,6 +409,61 @@ for iD=1:nD
     zC = cat(1,zC,nanzscore(abs(C0)));
     znC = cat(1,znC,nanzscore(abs(nC0)));
     
+    if strcmp(pathType,'Y') % compute additional parameters
+       for iP=1:nP
+           dTc0 = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2); 
+           dnTc0 = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2); 
+       end
+       dTc = cat(1,dTc,dTc0);
+       dnTc = cat(1,dnTc,dnTc0);
+       
+       dp = dotProduct(x0,y0,nx0,ny0,vec);
+       
+       dotA = cat(1,dotA,dp{1});
+       dotB = cat(1,dotB,dp{2});
+       dotC = cat(1,dotC,dp{3});
+       
+       inR = cat(1,inR,inside);
+       
+       % get angles between trail vectors
+       vec1 = [vec.x0{1}./vec.mag{1},vec.y0{1}./vec.mag{1}];
+       vec2 = [vec.x0{2}./vec.mag{2},vec.y0{2}./vec.mag{2}];
+       vec3 = [vec.x0{3}./vec.mag{3},vec.y0{3}./vec.mag{3}];
+       
+       thetaA = acos(dot(vec1,vec2))*180/pi;
+       thetaB = acos(dot(vec2,vec3))*180/pi;
+       thetaC = acos(dot(vec1,vec3))*180/pi;
+       
+       thetaAll = cat(1,thetaA,thetaB,thetaC);
+       [mintheta,ixmin] = min(thetaAll);
+       theta1 = cat(1,theta1,mintheta);
+       thetaAll(ixmin)=[];
+       [mintheta,~]=min(thetaAll);
+       theta2 = cat(1,theta2,mintheta);
+       
+       
+       outside1 = zeros(size(data));
+       xTO = xT(outside==1);
+       yTO = yT(outside==1);
+       for iT=1:length(xTO)
+        outside1(yTO(iT),xTO(iT))=1;
+       end
+       CC = bwconncomp(outside1);
+       iC = 1;
+       for iT=1:CC.NumObjects
+           if length(CC.PixelIdxList{iT})>1000
+               [i,j] = ind2sub(size(data),CC.PixelIdxList{iT});
+               xTarm{iC} = cat(1,xTarm{iC},j);
+               yTarm{iC} = cat(1,yTarm{iC},i);
+               for iP=1:length(x0)
+                   dTarm{iC} = cat(1,dTarm{iC},nanmin(sqrt((x0(iP)-xTarm{iC}).^2+(y0(iP)-yTarm{iC}).^2)));
+                   dnTarm{iC} = cat(1,dnTarm{iC},nanmin(sqrt((nx0(iP)-xTarm{iC}).^2+(ny0(iP)-yTarm{iC}).^2)));
+               end
+               iC = iC+1;
+           end
+       end
+           
+    end
     if readXLS
         mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); %#ok<UNRCH>
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));

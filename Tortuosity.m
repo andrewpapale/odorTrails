@@ -15,7 +15,7 @@ C = nan(nP,1);
 for iP=1:nP
      curv = (dx(iP).*ddy(iP)-dy(iP).*ddx(iP))./(dx(iP).^2+dy(iP).^2).^(1.5);
      arcL = sqrt(dx(iP).^2+dy(iP).^2);
-     C(iP) = curv./arcL;
+     C(iP) = abs(curv)./arcL;
 end
 
 
