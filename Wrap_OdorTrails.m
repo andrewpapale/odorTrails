@@ -158,12 +158,15 @@ if readXLS
                 sess0 = cat(1,sess0,iS0);
                 lastMouse = mousetemp;
                 % code to get concentration from xls text
+                koptone = strfind(tempStr,'0.1%');
                 kone = strfind(tempStr,'1%');
                 ktwo = strfind(tempStr,'2%');
-                if ~isempty(kone) && isempty(ktwo)
+                if ~isempty(optone) && isempty(kone) && isempty(ktwo)
                     conc0 = cat(1,conc0,1);
-                elseif isempty(kone) && ~isempty(ktwo)
+                elseif ~isempty(kone) && isempty(ktwo) && isempty(koptone)
                     conc0 = cat(1,conc0,2);
+                elseif isempty(kone) && ~isempty(ktwo) && isempty(koptone)
+                    conc0 = cat(1,conc0,3);
                 else
                     warning('unknown concentration');
                     conc0 = cat(1,conc0,nan);
@@ -446,6 +449,7 @@ for iD=1:nD
        for iT=1:length(xTO)
         outside1(yTO(iT),xTO(iT))=1;
        end
+       
        CC = bwconncomp(outside1);
        iC = 1;
        for iT=1:CC.NumObjects
