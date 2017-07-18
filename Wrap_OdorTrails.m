@@ -161,7 +161,7 @@ if readXLS
                 koptone = strfind(tempStr,'0.1%');
                 kone = strfind(tempStr,'1%');
                 ktwo = strfind(tempStr,'2%');
-                if ~isempty(optone) && isempty(kone) && isempty(ktwo)
+                if ~isempty(koptone) && isempty(kone) && isempty(ktwo)
                     conc0 = cat(1,conc0,1);
                 elseif ~isempty(kone) && isempty(ktwo) && isempty(koptone)
                     conc0 = cat(1,conc0,2);
@@ -411,9 +411,11 @@ for iD=1:nD
     znC = cat(1,znC,nanzscore(abs(nC0)));
     
     if strcmp(pathType,'Y') % compute additional parameters
+       dTc0 = nan(length(x0),1);
+       dnTc0 = nan(length(x0),1);
        for iP=1:nP
-           dTc0 = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2); 
-           dnTc0 = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2); 
+           dTc0(iP) = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2); 
+           dnTc0(iP) = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2); 
        end
        dTc = cat(1,dTc,dTc0);
        dnTc = cat(1,dnTc,dnTc0);
@@ -452,7 +454,8 @@ for iD=1:nD
        
        CC = bwconncomp(outside1);
        iC = 1;
-       for iT=1:CC.NumObjects
+
+       for iT=1:CC.NumObjects       
            if length(CC.PixelIdxList{iT})>1000
                [i,j] = ind2sub(size(data),CC.PixelIdxList{iT});
                keepV = zeros(length(xT0),1);
