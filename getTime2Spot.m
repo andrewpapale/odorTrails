@@ -44,8 +44,8 @@ for iM=1:nM
             quadrant(iM,iS)=4;
         end
     
-        
-        if conc(k0)==0
+        if sum(k0)>0
+        %if conc(k0)==0
             sess0(iM,iS)=iS;
             mouse0(iM,iS)=iM;
             initD(iM,iS) = dnT0(find(~isnan(dnT0),1,'first'));
