@@ -1,4 +1,4 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,...
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,bait,frame,zidphi,znidphi,nearX,nearY,...
     nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,xTarm,yTarm,dTarm,dnTarm] = Wrap_OdorTrails
 %function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName2,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2] = Wrap_OdorTrails
 % 2017-07-03 AndyP
@@ -43,6 +43,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 % sess - (nframes x 1 double) session counter (starts at 1, +1 for each new
 % session, typically 1 session/day with 4-5 trials/session).
 % conc - (nframes x 1 double) odor concentration for the given session,
+% bait - (nframes x 1 double) bait for the given session,
 % derived from the xls worksheet notes.  [] if readXLS is false.
 % frame - (nframes x 1 double) the current frame of the position sample
 % (typically 9000 frames / trial at 50 frames / s).
@@ -86,8 +87,8 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 
 homedir = cd;
 
-readXLS = false;
-pathType = 'Y';
+readXLS = true;
+pathType = 'spot';
 postSmoothing = 0.1; % s
 window = 1; % s
 dtime = 1/50; % Hz
@@ -95,6 +96,7 @@ dtime = 1/50; % Hz
 trial0 = [];
 sess0 = [];
 conc0 = [];
+bait0 = [];
 mouse0 = [];
 mouseName1 = [];
 iS0 = 1;
@@ -106,8 +108,8 @@ if readXLS
     
     % get trial numbers from xls sheet...
     warning('need to change directory and file name to match computer directory location for xls notesheet');
-    cd('C:\Users\papalea\Documents\Data');
-    [num,text] = xlsread('Log_170427.xlsx',1,'A1:H176','basic'); % read xls sheet into matlab
+    cd('C:\Users\Annie\Desktop\NavigationProject\Vids\Done\positions');
+    [num,text] = xlsread('Log_170427.xlsx',1,'A1:H85','basic'); % read xls sheet into matlab
     
     for iS=2:size(text,1);
         mousetemp = num(iS-1,2); % mice are always in second column, starting from row 1
@@ -161,14 +163,23 @@ if readXLS
                 % code to get concentration from xls text
                 kone = strfind(tempStr,'1%');
                 ktwo = strfind(tempStr,'2%');
-                if ~isempty(kone) && isempty(ktwo)
+                kpone=strfind(tempStr,'0.1%');
+                if ~isempty(kone) && isempty(ktwo) && isempty(kpone)
                     conc0 = cat(1,conc0,1);
-                elseif isempty(kone) && ~isempty(ktwo)
+                elseif isempty(kone) && ~isempty(ktwo) && isempty(kpone)
                     conc0 = cat(1,conc0,2);
+%                 elseif isempty(kone) && isempty(ktwo) && ~isempty(kpone)
+%                     conc0 = cat(1,conc0,0);
                 else
-                    warning('unknown concentration');
-                    conc0 = cat(1,conc0,nan);
+                    %warning('unknown concentration');
+                    conc0 = cat(1,conc0,0);
                 end
+                % code to get bait
+                kc = strfind(tempStr,'no bait');
+                if ~isempty(kc)
+                    bait0 = cat(1,bait0,0); %0 for no bait
+                else
+                    bait0 = cat(1,bait0,1);
             end
         end
     end
@@ -266,6 +277,7 @@ mouse = [];
 trial = [];
 sess = [];
 conc = [];
+bait = [];
 frame = [];
 nearX = [];
 nearY = [];
@@ -468,6 +480,7 @@ for iD=1:nD
         mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); %#ok<UNRCH>
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));
         conc = cat(1,conc,repmat(conc0(iD),[length(x0),1]));
+        bait = cat(1,bait,repmat(bait0(iD),[length(x0),1]));
         sess = cat(1,sess,repmat(sess0(iD),[length(x0),1]));
         mouseT = cat(1,mouseT,repmat(mouse0(iD),[length(xT0),1]));
         sessT = cat(1,sessT,repmat(sess0(iD),[length(xT0),1]));

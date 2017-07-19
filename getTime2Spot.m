@@ -6,7 +6,7 @@ doTest = false;
 threshold = 0.5; % cm (max dist to spot to indicate spot is found)
 leavethreshold = 10; % cm (max dist from spot to indicate spot is left)
 minT = 0.2; % s (minimum time @ spot to consider spot found)
-postSmoothing = 0.1; % s
+postSmoothing = 0.1; % 
 
 
 
@@ -45,7 +45,7 @@ for iM=1:nM
         end
     
         
-        if sum(k0)>0
+        if conc(k0)==0
             sess0(iM,iS)=iS;
             mouse0(iM,iS)=iM;
             initD(iM,iS) = dnT0(find(~isnan(dnT0),1,'first'));
