@@ -1,4 +1,4 @@
-function dphi = zIdPhi(dx,dy,dT,window,postSmoothing)
+function [dphi,dphi1,minMSE,nSelect] = zIdPhi(dx,dy,dT,window,postSmoothing)
 
 % sd = zIdPhi(sd, varargin)
 %
@@ -37,7 +37,11 @@ function dphi = zIdPhi(dx,dy,dT,window,postSmoothing)
 
 phi = atan2(dy, dx);
 uphi = unwrap(phi);
-dphi = dxdt(uphi,dT,window,postSmoothing);
+[dphi,minMSE,nSelect] = dxdt(phi,dT,window,postSmoothing);
+
+ddy = dxdt(dy,dT,window,postSmoothing);
+ddx = dxdt(dx,dT,window,postSmoothing);
+dphi1 = (dx.*ddy-dy.*ddx)./(dx.^2+dy.^2);
 
 
 

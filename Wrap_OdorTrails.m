@@ -1,6 +1,7 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,arm,dTarm,dnTarm,inR] = Wrap_OdorTrails
-%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,arm,dTarm,dnTarm,inR] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,theta3,arm,dTarm,dnTarm,inR,bait] = Wrap_OdorTrails
+%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,theta3,arm,dTarm,dnTarm,inR,bait] = Wrap_OdorTrails
 % 2017-07-03 AndyP
+% 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
 % 1) where nframes is the total number of frames to be analyzed.  Trail
@@ -87,8 +88,10 @@ homedir = cd;
 
 readXLS = true;
 pathType = 'Y';
-postSmoothing = 0.1; % s
-window = 1; % s
+postSmoothing = 0.25; % s
+%window = 0.5; % s
+m = 50;
+d = 1;
 dtime = 1/50; % Hz
 
 trial0 = [];
@@ -100,6 +103,7 @@ iS0 = 1;
 iM = 0;
 lastMouse = [];
 dateStr = [];
+bait0 = [];
 
 if readXLS
     
@@ -161,15 +165,22 @@ if readXLS
                 koptone = strfind(tempStr,'0.1%');
                 kone = strfind(tempStr,'1%');
                 ktwo = strfind(tempStr,'2%');
-                if ~isempty(koptone) && isempty(kone) && isempty(ktwo)
-                    conc0 = cat(1,conc0,1);
+                if ~isempty(koptone) && ~isempty(kone) && isempty(ktwo)
+                    conc0 = cat(1,conc0,0);
                 elseif ~isempty(kone) && isempty(ktwo) && isempty(koptone)
-                    conc0 = cat(1,conc0,2);
+                    conc0 = cat(1,conc0,1);
                 elseif isempty(kone) && ~isempty(ktwo) && isempty(koptone)
-                    conc0 = cat(1,conc0,3);
+                    conc0 = cat(1,conc0,2);
                 else
                     warning('unknown concentration');
                     conc0 = cat(1,conc0,nan);
+                end
+                
+                kunbait = strfind(tempStr,'no');
+                if ~isempty(kunbait)
+                    bait0 = cat(1,bait0,0);
+                else
+                    bait0 = cat(1,bait0,1);
                 end
             end
         end
@@ -295,9 +306,11 @@ dotC = [];
 inR = [];
 theta1 = [];
 theta2 = [];
+theta3 = [];
 arm = cell(3,1);
 dTarm = cell(3,1);
 dnTarm = cell(3,1);
+bait = [];
 for iD=1:nD
     cd(homedir);
      fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
@@ -363,13 +376,13 @@ for iD=1:nD
     frame = cat(1,frame,(1:length(x0))');
     
     % compute velocity
-    dx = dxdt(x0,dtime,window,postSmoothing);
-    dy = dxdt(y0,dtime,window,postSmoothing);
+    dx = foaw_diff(x0, dtime, m, d, postSmoothing);
+    dy = foaw_diff(y0, dtime, m, d, postSmoothing);
     V0 = sqrt(dx.^2+dy.^2)./11.2;
     V = cat(1,V,V0); % cm/s
     
-    ndx = dxdt(nx0,dtime,window,postSmoothing);
-    ndy = dxdt(ny0,dtime,window,postSmoothing);
+    ndx = foaw_diff(nx0, dtime, m, d, postSmoothing);
+    ndy = foaw_diff(ny0, dtime, m, d, postSmoothing);
     nV0 = sqrt(ndx.^2+ndy.^2)./11.2;
     nV = cat(1,nV,nV0); % cm/s
     
@@ -391,15 +404,15 @@ for iD=1:nD
     Ynp = cat(1,Ynp,yT0(In));
     
     
-    C0 = Tortuosity(dx,dy,dtime,window,postSmoothing);
+    C0 = Tortuosity1(dx,dy,dtime,m,d,postSmoothing);
     C = cat(1,C,C0);
     %
-    nC0 = Tortuosity(ndx,ndy,dtime,window,postSmoothing);
+    nC0 = Tortuosity1(ndx,ndy,dtime,m,d,postSmoothing);
     nC = cat(1,nC,nC0);
     
     % compute idphi
-    idphi0 = zIdPhi(dx,dy,dtime,window,postSmoothing);
-    nidphi0 = zIdPhi(ndx,ndy,dtime,window,postSmoothing);
+    idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
+    nidphi0 = zIdPhi1(ndx,ndy,dtime,m,d,postSmoothing);
     
     idphi = cat(1,idphi,idphi0);
     nidphi = cat(1,nidphi,nidphi0);
@@ -417,8 +430,8 @@ for iD=1:nD
            dTc0(iP) = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2); 
            dnTc0(iP) = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2); 
        end
-       dTc = cat(1,dTc,dTc0);
-       dnTc = cat(1,dnTc,dnTc0);
+       dTc = cat(1,dTc,dTc0./11.2);
+       dnTc = cat(1,dnTc,dnTc0./11.2);
        
        dp = dotProduct(x0,y0,nx0,ny0,vec);
        
@@ -437,32 +450,32 @@ for iD=1:nD
        thetaB = acos(dot(vec2,vec3))*180/pi;
        thetaC = acos(dot(vec1,vec3))*180/pi;
        
-       thetaAll = cat(1,thetaA,thetaB,thetaC);
-       [mintheta,ixmin] = min(thetaAll);
-       theta1 = cat(1,theta1,repmat(mintheta,[length(x0),1]));
-       thetaAll(ixmin)=[];
-       [mintheta,~]=min(thetaAll);
-       theta2 = cat(1,theta2,repmat(mintheta,[length(x0),1]));
+       theta1 = cat(1,theta1,repmat(thetaA,[length(x0),1]));
+       theta2 = cat(1,theta2,repmat(thetaB,[length(x0),1]));
+       theta3 = cat(1,theta3,repmat(thetaC,[length(x0),1]));
        
        
        outside1 = zeros(size(data));
        xTO = xT(outside==1);
        yTO = yT(outside==1);
        for iT=1:length(xTO)
-        outside1(yTO(iT),xTO(iT))=1;
+        outside1(xTO(iT),yTO(iT))=1;
        end
        
        CC = bwconncomp(outside1);
+       
        iC = 1;
-
-       for iT=1:CC.NumObjects       
-           if length(CC.PixelIdxList{iT})>1000
-               [i,j] = ind2sub(size(data),CC.PixelIdxList{iT});
+       disp(CC.NumObjects);
+       for iR=1:CC.NumObjects
+           if length(CC.PixelIdxList{iR})>100
+               [i,j] = ind2sub(size(data),CC.PixelIdxList{iR});
                keepV = zeros(length(xT0),1);
                for iP=1:length(xT0)
-                    if xT0(iP)==j & yT0(iP)==x; %#ok<AND2>
-                        keepV(iP)=1;
-                    end
+                   for iQ=1:length(j)
+                       if xT0(iP)==j(iQ) & yT0(iP)==i(iQ); %#ok<AND2>
+                           keepV(iP)=1;
+                       end
+                   end
                end
                arm{iC} = cat(1,arm{iC},keepV);
                temp1 = nan(length(x0),1);
@@ -472,9 +485,13 @@ for iD=1:nD
                    temp2(iP) = nanmin(sqrt((nx0(iP)-j).^2+(ny0(iP)-i).^2));
                    
                end
-               dTarm{iC} = cat(1,dTarm{iC},temp1);
-               dnTarm{iC} = cat(1,dnTarm{iC},temp2);
+               
+               dTarm{iC} = cat(1,dTarm{iC},temp1./11.2);
+               dnTarm{iC} = cat(1,dnTarm{iC},temp2./11.2);
+
                iC = iC+1;
+           else
+               disp(length(CC.PixelIdxList{iR}));
            end
        end
            
@@ -483,6 +500,7 @@ for iD=1:nD
         mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); %#ok<UNRCH>
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));
         conc = cat(1,conc,repmat(conc0(iD),[length(x0),1]));
+        bait = cat(1,bait,repmat(bait0(iD),[length(x0),1]));
         sess = cat(1,sess,repmat(sess0(iD),[length(x0),1]));
         mouseT = cat(1,mouseT,repmat(mouse0(iD),[length(xT0),1]));
         sessT = cat(1,sessT,repmat(sess0(iD),[length(xT0),1]));

@@ -22,6 +22,8 @@ sess0 = nan(nM,nS);
 mouse0 = nan(nM,nS);
 spotfound = nan(nM,nS);
 quadrant = nan(nM,nS);
+conc0 = nan(nM,nS);
+bait0 = nan(nM,nS);
 for iM=1:nM
     for iS=1:nS
         k0 = mouse==iM & sess==iS;
@@ -48,6 +50,8 @@ for iM=1:nM
         if sum(k0)>0
             sess0(iM,iS)=iS;
             mouse0(iM,iS)=iM;
+            conc0(iM,iS)=mode(conc(k0));
+            bait0(iM,iS)=mode(bait(k0));
             initD(iM,iS) = dnT0(find(~isnan(dnT0),1,'first'));
             minD(iM,iS) = nanmin(dnT0);
             firstT = find(dnT0<threshold,1,'first');

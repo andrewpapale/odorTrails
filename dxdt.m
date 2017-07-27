@@ -1,4 +1,4 @@
-function dx = dxdt(x,dT,window,postSmoothing)
+function [dx,minMSE,nSelect] = dxdt(x,dT,window,postSmoothing)
 
 % dx = dxdt(x,varargin)
 % window = 1; % seconds
@@ -25,6 +25,7 @@ display = 0;
 % xD = x.data();
 % dT = x.dt();
 xD = x(~isnan(x(:)));
+
 %dT = 1/50;
 
 nW = min(ceil(window/dT),length(xD));
@@ -47,10 +48,10 @@ for iN = 3:nW
 end
 if display, fprintf(2, '!'); end
 
-[~, nSelect] = min(MSE,[],2);
+[minMSE0, nSelect0] = min(MSE,[],2);
 dx = nan .* ones(size(xD));
 for iX = 1:nX
-	dx(iX) = -b(iX,nSelect(iX)) / dT;  % CORRECTED ADR 6 August 2012 - it was returning the negative direction
+	dx(iX) = -b(iX,nSelect0(iX)) / dT;  % CORRECTED ADR 6 August 2012 - it was returning the negative direction
 end
 
 if postSmoothing
@@ -60,6 +61,11 @@ end
 
 dx0 = nan(size(x));
 dx0(~isnan(x(:)))=dx;
+
+minMSE = nan(size(x));
+nSelect = nan(size(x));
+minMSE(~isnan(x(:)))=minMSE0;
+nSelect(~isnan(x(:)))=nSelect0;
 
 dx = dx0;
 	
