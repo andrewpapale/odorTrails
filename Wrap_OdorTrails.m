@@ -481,8 +481,8 @@ for iD=1:nD
                temp1 = nan(length(x0),1);
                temp2 = nan(length(x0),1);
                for iP=1:length(x0)
-                   temp1(iP) = nanmin(sqrt((x0(iP)-i).^2+(y0(iP)-j).^2));
-                   temp2(iP) = nanmin(sqrt((nx0(iP)-i).^2+(ny0(iP)-j).^2));
+                   temp1(iP) = nanmin(sqrt((x0(iP)-j).^2+(y0(iP)-i).^2));
+                   temp2(iP) = nanmin(sqrt((nx0(iP)-j).^2+(ny0(iP)-i).^2));
                    
                end
                
