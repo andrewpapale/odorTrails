@@ -1,5 +1,5 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,theta3,arm,dTarm,dnTarm,inR,bait] = Wrap_OdorTrails
-%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,dnTc,dTc,dotA,dotB,dotC,theta1,theta2,theta3,arm,dTarm,dnTarm,inR,bait] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_OdorTrails
+%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % Wrapper function to process and concatenate position data from optimouse
@@ -307,23 +307,23 @@ inR = [];
 theta1 = [];
 theta2 = [];
 theta3 = [];
-arm = cell(3,1);
+Yarm = cell(3,1);
 dTarm = cell(3,1);
 dnTarm = cell(3,1);
 bait = [];
 for iD=1:nD
     cd(homedir);
-     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
-     load(positFiles(iD).name,'position_results');
-     load(trailFiles(iD).name,'xT','yT','data');
-     load(startFiles(iD).name,'startFrame');
+    fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
+    load(positFiles(iD).name,'position_results');
+    load(trailFiles(iD).name,'xT','yT','data');
+    load(startFiles(iD).name,'startFrame');
     
     if strcmp(pathType,'Y')
-        load(compFiles(iD).name,'vec','xC','yC','outside','inside');
+        load(compFiles(iD).name,'xC0','yC0','xC','yC','outside','inside','vec','arm');
     end
     
-%    code to process the position output from optimouse
-     [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
+    %    code to process the position output from optimouse
+    [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
     
     % code to get mouse1 / sess1, should be identical to mouse/sess from
     % xls file
@@ -342,8 +342,8 @@ for iD=1:nD
     
     
     % Get trail coordinates.  Note y,x correctly switched from trailFile data.
-     xT0 = yT;
-     yT0 = xT;
+    xT0 = yT;
+    yT0 = xT;
     
     xT1 = cat(1,xT1,xT0);
     yT1 = cat(1,yT1,yT0);
@@ -424,80 +424,54 @@ for iD=1:nD
     znC = cat(1,znC,nanzscore(abs(nC0)));
     
     if strcmp(pathType,'Y') % compute additional parameters
-       dTc0 = nan(length(x0),1);
-       dnTc0 = nan(length(x0),1);
-       for iP=1:nP
-           dTc0(iP) = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2); 
-           dnTc0(iP) = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2); 
-       end
-       dTc = cat(1,dTc,dTc0./11.2);
-       dnTc = cat(1,dnTc,dnTc0./11.2);
-       
-       dp = dotProduct(x0,y0,nx0,ny0,vec);
-       
-       dotA = cat(1,dotA,dp{1});
-       dotB = cat(1,dotB,dp{2});
-       dotC = cat(1,dotC,dp{3});
-       
-       inR = cat(1,inR,inside);
-       
-       % get angles between trail vectors
-       vec1 = [vec.x0{1}./vec.mag{1},vec.y0{1}./vec.mag{1}];
-       vec2 = [vec.x0{2}./vec.mag{2},vec.y0{2}./vec.mag{2}];
-       vec3 = [vec.x0{3}./vec.mag{3},vec.y0{3}./vec.mag{3}];
-       
-       thetaA = acos(dot(vec1,vec2))*180/pi;
-       thetaB = acos(dot(vec2,vec3))*180/pi;
-       thetaC = acos(dot(vec1,vec3))*180/pi;
-       
-       theta1 = cat(1,theta1,repmat(thetaA,[length(x0),1]));
-       theta2 = cat(1,theta2,repmat(thetaB,[length(x0),1]));
-       theta3 = cat(1,theta3,repmat(thetaC,[length(x0),1]));
-       
-       
-       outside1 = zeros(size(data));
-       xTO = xT(outside==1);
-       yTO = yT(outside==1);
-       for iT=1:length(xTO)
-        outside1(xTO(iT),yTO(iT))=1;
-       end
-       
-       CC = bwconncomp(outside1);
-       
-       iC = 1;
-       disp(CC.NumObjects);
-       for iR=1:CC.NumObjects
-           if length(CC.PixelIdxList{iR})>100
-               [i,j] = ind2sub(size(data),CC.PixelIdxList{iR});
-               keepV = zeros(length(xT0),1);
-               for iP=1:length(xT0)
-                   for iQ=1:length(j)
-                       if xT0(iP)==j(iQ) & yT0(iP)==i(iQ); %#ok<AND2>
-                           keepV(iP)=1;
-                       end
-                   end
-               end
-               arm{iC} = cat(1,arm{iC},keepV);
-               temp1 = nan(length(x0),1);
-               temp2 = nan(length(x0),1);
-               for iP=1:length(x0)
-                   temp1(iP) = nanmin(sqrt((x0(iP)-j).^2+(y0(iP)-i).^2));
-                   temp2(iP) = nanmin(sqrt((nx0(iP)-j).^2+(ny0(iP)-i).^2));
-                   
-               end
-               
-               dTarm{iC} = cat(1,dTarm{iC},temp1./11.2);
-               dnTarm{iC} = cat(1,dnTarm{iC},temp2./11.2);
-
-               iC = iC+1;
-           else
-               disp(length(CC.PixelIdxList{iR}));
-           end
-       end
-           
-     end
+        dTc0 = nan(length(x0),1);
+        dnTc0 = nan(length(x0),1);
+        for iP=1:nP
+            dTc0(iP) = sqrt((x0(iP)-xC).^2+(y0(iP)-yC).^2);
+            dnTc0(iP) = sqrt((nx0(iP)-xC).^2+(ny0(iP)-yC).^2);
+        end
+        dTc = cat(1,dTc,dTc0./11.2);
+        dnTc = cat(1,dnTc,dnTc0./11.2);
+        
+        dp = dotProduct(x0,y0,nx0,ny0,xC0,yC0,xC,yC);
+        
+        dotA = cat(1,dotA,dp{1});
+        dotB = cat(1,dotB,dp{2});
+        dotC = cat(1,dotC,dp{3});
+        
+        inR = cat(1,inR,inside);
+        
+        % get angles between trail vectors
+        vec1 = [vec.x0{1}./vec.mag{1},vec.y0{1}./vec.mag{1}];
+        vec2 = [vec.x0{2}./vec.mag{2},vec.y0{2}./vec.mag{2}];
+        vec3 = [vec.x0{3}./vec.mag{3},vec.y0{3}./vec.mag{3}];
+        
+        thetaA = acos(dot(vec1,vec2))*180/pi;
+        thetaB = acos(dot(vec2,vec3))*180/pi;
+        thetaC = acos(dot(vec1,vec3))*180/pi;
+        
+        theta1 = cat(1,theta1,repmat(thetaA,[length(x0),1]));
+        theta2 = cat(1,theta2,repmat(thetaB,[length(x0),1]));
+        theta3 = cat(1,theta3,repmat(thetaC,[length(x0),1]));
+        
+        
+        for iA=1:3
+            Yarm{iA} = cat(1,Yarm{iA},arm{iA}); %#ok<USENS>
+            temp1 = nan(length(x0),1);
+            temp2 = nan(length(x0),1);
+            for iP=1:length(x0)
+                
+                temp1(iP) = nanmin(sqrt((x0(iP)-xT0(arm{iA}==1)).^2+(y0(iP)-yT0(arm{iA}==1)).^2));
+                temp2(iP) = nanmin(sqrt((nx0(iP)-xT0(arm{iA}==1)).^2+(ny0(iP)-yT0(arm{iA}==1)).^2));
+                
+            end
+            dTarm{iA} = cat(1,dTarm{iA},temp1./11.2);
+            dnTarm{iA} = cat(1,dnTarm{iA},temp2./11.2);
+        end
+        
+    end
     if readXLS
-        mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); %#ok<UNRCH>
+        mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); 
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));
         conc = cat(1,conc,repmat(conc0(iD),[length(x0),1]));
         bait = cat(1,bait,repmat(bait0(iD),[length(x0),1]));
@@ -505,13 +479,31 @@ for iD=1:nD
         mouseT = cat(1,mouseT,repmat(mouse0(iD),[length(xT0),1]));
         sessT = cat(1,sessT,repmat(sess0(iD),[length(xT0),1]));
     else
-        mouse = cat(1,mouse,repmat(iM,[length(x0),1]));
+        mouse = cat(1,mouse,repmat(iM,[length(x0),1])); %#ok<UNRCH>
         sess = cat(1,sess,repmat(iS,[length(x0),1]));
         mouseT = cat(1,mouseT,repmat(iM,[length(xT0),1]));
         sessT = cat(1,sessT,repmat(iS,[length(xT0),1]));
     end
     
 end
+
+if strcmp(pathType,'Y')
+    Y.dTarm = dTarm;
+    Y.dnTarm = dnTarm;
+    Y.theta1 = theta1;
+    Y.theta2 = theta2;
+    Y.theta3 = theta3;
+    Y.inR = inR;
+    Y.dotA = dotA;
+    Y.dotB = dotB;
+    Y.dotC = dotC;
+    Y.dTc = dTc;
+    Y.dnTc = dnTc;
+    Y.Yarm = Yarm;
+else
+    Y = [];
+end
+
 
 end
 
