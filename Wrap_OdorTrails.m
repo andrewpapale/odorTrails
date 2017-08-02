@@ -108,8 +108,8 @@ if readXLS
     
     % get trial numbers from xls sheet...
     warning('need to change directory and file name to match computer directory location for xls notesheet');
-    cd('C:\Users\Annie\Desktop\NavigationProject\Vids\Done\positions');
-    [num,text] = xlsread('Log_170427.xlsx',1,'A1:H85','basic'); % read xls sheet into matlab
+    cd('C:\Users\Annie\Desktop\NavigationProject\Vids\Spot-Trail\positions');
+    [num,text] = xlsread('Log_Spot_Trail.xlsx',1,'A1:H48','basic'); % read xls sheet into matlab
     
     for iS=2:size(text,1);
         mousetemp = num(iS-1,2); % mice are always in second column, starting from row 1
