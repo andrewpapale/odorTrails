@@ -47,7 +47,7 @@ for iM=1:nM
         elseif xT0 < 1280/2 && yT0 < 1018/2
             quadrant(iM,iS)=4;
         end
-        
+    
         
         if sum(k0)>0
             sess0(iM,iS)=iS;
@@ -69,35 +69,34 @@ for iM=1:nM
                 end
                 
                 % find 2nd time to spot (if any)
-                secondT = find(dnT0<threshold & frame0 > lastT+firstT,1,'first');
+                secondT = find(dnT0(lastT:end)<threshold,1,'first');
                 if ~isempty(secondT);
                     t2s2(iM,iS)=frame0(secondT)/50;
-                    dnT0temp2 = dnT0(secondT:end);
-                    dnT0temp2 = nanfastsmooth(dnT0temp2,nSm,1,2);
-                    frametemp2 = frame0(secondT:end);
-                    lastT2 = find(dnT0temp2>leavethreshold,1,'first');
+                    dnT0temp = dnT0(secondT:end);
+                    dnT0temp = nanfastsmooth(dnT0temp,nSm,1,2);
+                    frametemp = frame0(secondT:end);
+                    lastT2 = find(dnT0temp>leavethreshold,1,'first');
                     if isempty(lastT2)
-                        lastT2 = length(dnT0temp2);
-                    end
-                    
-                    % find 3rd time to spot (if any)
-                    thirdT = find(dnT0<threshold  & frame0 > lastT2+secondT,1,'first');
-                    if ~isempty(thirdT);
-                        t2s3(iM,iS)=frame0(thirdT)/50;
-                        dnT0temp3 = dnT0(thirdT:end);
-                        dnT0temp3 = nanfastsmooth(dnT0temp3,nSm,1,2);
-                        frametemp3 = frame0(thirdT:end);
-                        lastT3 = find(dnT0temp3>leavethreshold,1,'first');
-                        if isempty(lastT3)
-                            lastT3 = length(dnT0temp3);
-                        end
-                    else
-                        t2s3(iM,iS) = -20;
+                        lastT2 = length(dnT0temp);
                     end
                 else
-                    secondT = nan;
                     t2s2(iM,iS) = -20;
                 end
+                
+                % find 3rd time to spot (if any)
+                thirdT = find(dnT0(lastT:end)<threshold,1,'first');
+                if ~isempty(thirdT);
+                    t2s3(iM,iS)=frame0(thirdT)/50;
+                    dnT0temp = dnT0(thirdT:end);
+                    dnT0temp = nanfastsmooth(dnT0temp,nSm,1,2);
+                    frametemp = frame0(thirdT:end);
+                    lastT3 = find(dnT0temp>leavethreshold,1,'first');
+                    if isempty(lastT3)
+                        lastT3 = length(dnT0temp);
+                    end
+                else
+                    t2s3(iM,iS) = -20;
+                end                
                 
                 if doTest
                     F = figure(1); clf; %#ok<UNRCH>
@@ -105,14 +104,9 @@ for iM=1:nM
                     plot(frametemp,dnT0temp,'k');
                     plot(firstT,dnT0(firstT),'r.','markersize',20);
                     plot(lastT+firstT,dnT0temp(lastT),'b.','markersize',20);
-                    if ~isnan(secondT)
-                        plot(secondT,dnT0(secondT),'r.','markersize',20);
-                        plot(lastT2+secondT,dnT0temp2(lastT2),'b.','markersize',20);
-                        if ~isnan(thirdT)
-                            plot(thirdT,dnT0(thirdT),'r.','markersize',20);
-                            plot(lastT3+thirdT,dnT0temp3(lastT3),'b.','markersize',20);
-                        end
-                    end
+                    plot(secondT,dnT0(secondT),'r.','markersize',20);
+                    plot(lastT2+secondT,dnT0temp(lastT2),'b.','markersize',20);
+                    
                     pause;
                 end
                 
