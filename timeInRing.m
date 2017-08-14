@@ -45,6 +45,7 @@ for iM=1:nM
             
             for iR=1:nR
                 dist = sqrt((x0-xT).^2+(y0-yT).^2);
+                randdist = sqrt((xR-xT).^2+(yR-yT).^2);
                 if iR>1
                     inR = dist <= radius(iR) & dist > radius(iR-1);
                     inRrand = randdist <= radius(iR) & randdist > radius(iR-1);
@@ -57,7 +58,7 @@ for iM=1:nM
                 
                 %area=1;
                 R(iR,iM,iS) = nansum(inR)./(50*area);
-                randdist = sqrt((xR-xT).^2+(yR-yT).^2);
+                
                 
                 randR(iR,iM,iS) = nansum(inRrand)./(50*area);
             end
