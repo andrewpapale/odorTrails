@@ -1,4 +1,4 @@
-function v_est = foaw_diff(y, Ts, m, d, postSmoothing)
+function [v_est,winused] = foaw_diff(y, Ts, m, d, postSmoothing)
 % 2017-07-03 AndyP added smoothing
 
 
@@ -6,6 +6,7 @@ slope = 0;                                  % estimate
 
 
 v_est0 = nan(size(y));
+winused = nan(size(y));
 y0 = y(~isnan(y));
 nS = max(size(y0));
 
@@ -47,7 +48,7 @@ if ~isempty(y0)
                 break;
             end
         end
-        
+        winused(k) = window_len;
         v_est(k) = slope;
     end
     

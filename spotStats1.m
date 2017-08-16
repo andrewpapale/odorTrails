@@ -99,17 +99,23 @@ bS = reshape(bS,[size(sess0,1),size(sess0,2)]);
 %
 % dphi as a f'n of distance from spot
 
-log10dphi = logVar(abs(nidphi));
+
+
+log10dphi = logVar(abs(nidphi)./nV);
 znidphi1 = reZscore(log10dphi,mouse,sess);
 
 edge = ~(nearX>50 & nearY>50 & nearX<nanmax(nearX)-50 & nearY<nanmax(nearY)-50);
-k = nV>0 & ~edge;
+k = nV>0.1 & ~edge;
 bdT = cat(2,0,quantile(dnT(k),30),Inf);
+
+[~,dT0]=histc(dnT,bdT);
+[p,table,stats]=anova1(znidphi1(k),dT0(k));
+
 clear p h stats
+bootstat = bootstrp(1000, 'median', znidphi1(k));
 for iD=1:length(bdT)-1;
     disp(iD);
     k0 = k & (dnT >= bdT(iD) & dnT < bdT(iD+1));
-    bootstat = bootstrp(1000, 'median', znidphi(k0));
     [p(iD),h(iD)] = ranksum(znidphi1(k0),bootstat);
 end
 
@@ -121,8 +127,10 @@ lineProps.col = {'b'};
 mseb(bdT(1:end-1),H(:,1)',dH(:,1)',lineProps);
 line([0 90],[0 0],'color','k');
 
+expfalsePos = length(bdT)-1;
+
 for iD=1:length(bdT)-1
-    if p(iD)<0.001
+    if p(iD)<0.05/expfalsePos;
        text(bdT(iD),H(iD)+0.1,'*');
     end
 end
@@ -149,9 +157,10 @@ mseb(radii,nanmedian(R(:,knot),2),nanstderr(R(:,knot),[],2)',lineProps);
 lineProps.col = {[0.5 0.5 0.5]};
 mseb(radii,nanmedian(randR(:,:),2),nanstderr(randR(:,:),[],2)',lineProps);
 line([0 30],[0 0],'color','k');
-    
+
+expfalsePos = size(R,1);   
 for iR=1:size(R,1)
-    if p(iR)<0.001
+    if p(iR)<0.05/expfalsePos
        text(radii(iR),nanmean(R(iR,kfound),2)+1E-5,'*');
     end
 end
