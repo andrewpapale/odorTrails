@@ -30,8 +30,8 @@ for iM=1:nM
             
             %disp(size(x0));
             
-            kyes = t2s(iM,iS)>0 & conc0(iM,iS)==iconc & bait0(iM,iS)==0;
-            kno = t2s(iM,iS)==-20 & conc0(iM,iS)==iconc & bait0(iM,iS)==0;
+            kyes = t2s(iM,iS)>0 & conc0(iM,iS)==iconc & bait0(iM,iS)==1;
+            kno = t2s(iM,iS)==-20 & conc0(iM,iS)==iconc & bait0(iM,iS)==1;
             
             if kyes
                 ktime = round(t2s(iM,iS)*50)+500;
@@ -105,7 +105,7 @@ radii=radius./11.2;
 for iR=1:nR
     for iQ=1:nR
         Cfound(iR,iQ)=corr2(foundR(iR,:),foundR(iQ,:));
-        Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
-        Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
+        %Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
+        %Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
     end
 end

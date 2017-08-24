@@ -1,0 +1,23 @@
+% get AngleRel2Spot
+
+nM = max(mouse);
+nS = max(sess);
+
+nP = length(x);
+
+angleRel2Spot = nan(nP,1);
+for iM=1:nM
+    for iS=1:nS
+        k = mouse==iM & sess==iS;
+        kT = mouseT==iM & sessT==iS;
+        
+        if sum(k)>0
+            
+            x1 = nx(k)-x(k);
+            y1 = ny(k)-y(k);
+            mag1 = sqrt(x1.^2+y1.^2);
+            vec1 = [x1./mag1 y1./mag1];
+            
+            xT1 = nanmedian(xT1(kT));
+            yT1 = nan
+            

@@ -1,5 +1,5 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_OdorTrails
-%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_Generic
+%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y]=Wrap_Generic
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % Wrapper function to process and concatenate position data from optimouse

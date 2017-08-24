@@ -102,7 +102,7 @@ bS = reshape(bS,[size(sess0,1),size(sess0,2)]);
 
 
 log10dphi = logVar(abs(nidphi)./nV);
-znidphi1 = reZscore(log10dphi,mouse,sess);
+znidphi1 = zScoreMouse(log10dphi,mouse);
 
 edge = ~(nearX>50 & nearY>50 & nearX<nanmax(nearX)-50 & nearY<nanmax(nearY)-50);
 k = nV>0.1 & ~edge;
@@ -112,7 +112,7 @@ bdT = cat(2,0,quantile(dnT(k),30),Inf);
 [p,table,stats]=anova1(znidphi1(k),dT0(k));
 
 clear p h stats
-bootstat = bootstrp(1000, 'median', znidphi1(k));
+bootstat = bootstrp(100, 'nanmedian', znidphi1(k));
 for iD=1:length(bdT)-1;
     disp(iD);
     k0 = k & (dnT >= bdT(iD) & dnT < bdT(iD+1));
@@ -144,7 +144,9 @@ k = ~isnan(mouse0);
 kfound = t2s>0;
 knot = t2s < 0;
 clear p h stats
-for iR=1:size(R,1)
+clear p2 h2 stats2
+
+for iR=2:size(R,1)
     disp(iR);
     [p(iR),h(iR)] = ranksum(R(iR,k & kfound),R(iR,k & knot));
 end
