@@ -37,7 +37,7 @@ nx0(~notedge)=nan;
 ny0(~notedge)=nan;
 
 mm = position_results.MouseMean(startFrame:end);
-k = ones(length(x));
+k = ones(size(x));
 mm(mm==0)=nan;
 Nmm = log10(mm)./nanmax(log10(mm));
 k(Nmm < 0.5*nanmean(Nmm) | isnan(Nmm)) = 0;
