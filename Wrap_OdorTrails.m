@@ -1,5 +1,5 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y] = Wrap_Generic
-%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y]=Wrap_Generic
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y,L,nL] = Wrap_OdorTrails
+%[x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi,znidphi,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,C,nC,znC,zC,bait,Y,L,nL]=Wrap_OdorTrails
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % Wrapper function to process and concatenate position data from optimouse
@@ -311,6 +311,8 @@ Yarm = cell(3,1);
 dTarm = cell(3,1);
 dnTarm = cell(3,1);
 bait = [];
+L = [];
+nL = [];
 for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
@@ -409,6 +411,12 @@ for iD=1:nD
     %
     nC0 = Tortuosity1(ndx,ndy,dtime,m,d,postSmoothing);
     nC = cat(1,nC,nC0);
+    
+    L0 = SplineCurvature(x0,y0);
+    L = cat(1,L,L0');
+    
+    nL0 = SplineCurvature(nx0,ny0);
+    nL = cat(1,nL,nL0');
     
     % compute idphi
     idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
