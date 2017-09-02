@@ -54,11 +54,11 @@ k(mL>8)=0; % mice are <8cm long
 nx0(~k)=nan;
 ny0(~k)=nan;
 
-nS = ceil(postSmoothing/dT);
-x0(notedge)= medfilt1(x0(notedge),nS,'omitnan','truncate');
-y0(notedge)= medfilt1(y0(notedge),nS,'omitnan','truncate');
-nx0(notedge)= medfilt1(nx0(notedge),nS,'omitnan','truncate');
-ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
+% nS = ceil(postSmoothing/dT);
+% x0(notedge)= medfilt1(x0(notedge),nS,'omitnan','truncate');
+% y0(notedge)= medfilt1(y0(notedge),nS,'omitnan','truncate');
+% nx0(notedge)= medfilt1(nx0(notedge),nS,'omitnan','truncate');
+% ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
 
 dx = dxdt(x0,dT,window,postSmoothing);
 dy = dxdt(y0,dT,window,postSmoothing);

@@ -87,7 +87,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,zidphi
 homedir = cd;
 
 readXLS = true;
-pathType = 'Y';
+pathType = 'spot';
 postSmoothing = 0.25; % s
 %window = 0.5; % s
 m = 50;
