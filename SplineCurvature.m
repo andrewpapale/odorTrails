@@ -1,4 +1,4 @@
-function L = SplineCurvature(x0,y0)
+function [L,zz,L0] = SplineCurvature(x0,y0)
 % Measures linearity/tortuosity on an interpolant with fixed window length
 % Modified code from James Hengenius
 % 2017-08-29
@@ -13,7 +13,7 @@ zz = interparc(roundn(pt_density*arcl,0),x0(k),y0(k),'linear');
 L0 = nan(length(zz),1);
 
 % Window size
-res = 1/50; % Resolution scaling term; eg, window length = 2% total length
+res = 1/25; % Resolution scaling term; eg, window length = 2% total length
 win = roundn(res*length(zz),0);
 
 if mod(win,2)==0
@@ -37,4 +37,5 @@ L = nan(size(x0));
 indx0 = linspace(0,1,length(L0));
 indx1 = linspace(0,1,length(L));
 L = interp1(indx0,L0',indx1);
+
 

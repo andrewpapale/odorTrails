@@ -88,10 +88,10 @@ homedir = cd;
 
 readXLS = true;
 pathType = 'spot';
-postSmoothing = 0.25; % s
+postSmoothing = 0.2; % s
 %window = 0.5; % s
 m = 50;
-d = 1;
+d = 0.5;
 dtime = 1/50; % Hz
 
 trial0 = [];
