@@ -23,6 +23,7 @@ end
 
 k = t2s>0 & ~isnan(mouse0);
 [p,table,stats]=anovan(zt2s(k),{mouse0(k),conc0(k),bait0(k)},'varnames',{'mouse','concentration','bait'},'model','interaction');
+% small effect of bait
 % small effect of mouse x bait / unbait
 % no effect of concentration
 
@@ -52,10 +53,7 @@ k = ~isnan(hitmiss);
 % mice are more successful when spot is baited
 
 [tbl,chi2,p,labels] = crosstab(hitmiss(k),conc0(k));
-[tbl,chi2,p,labels] = crosstab(hitmiss(k),conc0(k)==0);
-[h,p,stats] = fishertest(tbl);
-[tbl,chi2,p,labels] = crosstab(hitmiss(k),conc0(k)==2);
-[h,p,stats] = fishertest(tbl);
+
 % no effect of concentration
 
 [tbl,chi2,p,labels] = crosstab(hitmiss(k),mouse0(k));
@@ -73,7 +71,7 @@ k = ~isnan(hitmiss) & bS>0;
 
 k = ~isnan(mouse0);
 revisit = t2s2 > 0;
-
+clf;
 H = histcn([sess0(k),bait0(k)],cat(2,1,quantile(sess0(k),3),Inf),0:1,'AccumData',+(revisit),'fun',@nanmean);
 dH = histcn([sess0(k),bait0(k)],cat(2,1,quantile(sess0(k),3),Inf),0:1,'AccumData',+(revisit),'fun',@nanstderr);
 lineProps.col = {'b'};
@@ -82,7 +80,7 @@ lineProps.col = {'r'};
 mseb(cat(2,1,quantile(sess0(k),3)),H(:,2)',dH(:,2)',lineProps);
 xlabel('session (binned)','fontsize',18);
 ylabel('average number of spot returns','fontsize',18)
-legend('baited','unbaited');
+legend('unbaited','baited');
 
 [tbl,chi2,p,labels] = crosstab(revisit(k),bait0(k));
 [h,p,stats] = fishertest(tbl);
@@ -91,7 +89,12 @@ legend('baited','unbaited');
 k = ~isnan(mouse0) & bait0==1;
 [~,bS]=histc(sess0(:),cat(2,1,quantile(sess0(:),3),Inf));
 bS = reshape(bS,[size(sess0,1),size(sess0,2)]);
-[p,table,stats]=kruskalwallis(+(revisit(k)),bS(k));
+[tbl,chi2,p,labels] = crosstab(revisit(k),bS(k));
+
+k = ~isnan(mouse0) & bait0==0;
+[~,bS]=histc(sess0(:),cat(2,1,quantile(sess0(:),3),Inf));
+bS = reshape(bS,[size(sess0,1),size(sess0,2)]);
+[tbl,chi2,p,labels] = crosstab(revisit(k),bS(k));
 % mice revisit more previously baited spots on early sessions
 
 %

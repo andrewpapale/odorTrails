@@ -156,6 +156,8 @@ function [pt,dudt,fofthandle] = interparc(t,px,py,varargin)
 % Release: 1.0
 % Release date: 3/15/2010
 
+% Modified AEP added nansums
+
 % unpack the arguments and check for errors
 if nargin < 3
   error('ARCLENGTH:insufficientarguments', ...
@@ -254,10 +256,10 @@ pt = NaN(nt,ndim);
 % Compute the chordal (linear) arclength
 % of each segment. This will be needed for
 % any of the methods.
-chordlen = sqrt(sum(diff(pxy,[],1).^2,2));
+chordlen = sqrt(nansum(diff(pxy,[],1).^2,2));
 
 % Normalize the arclengths to a unit total
-chordlen = chordlen/sum(chordlen);
+chordlen = chordlen/nansum(chordlen);
 
 % cumulative arclength
 cumarc = [0;cumsum(chordlen)];

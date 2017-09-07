@@ -72,7 +72,7 @@ ny0(~k)=nan;
 % % % %
 dnx = dxdt(nx0,dT,window,postSmoothing);
 dny = dxdt(ny0,dT,window,postSmoothing);
-nV = sqrt(dnx.^2+dny.^2)./11.2; % cm/s
+nV = sqrt(dnx.^2+dny.^2)./14.8; % cm/s
 k = nV < 200 & dnx < 1000 & dny < 1000;
 nx0(~k)=nan;
 ny0(~k)=nan;
