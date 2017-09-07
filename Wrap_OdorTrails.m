@@ -1,9 +1,9 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,L,nL,zz] = Wrap_OdorTrails
-% [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,L,nL,zz] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z] = Wrap_OdorTrails
+% [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % 2017-09-07 AndyP updated with SplineCurvature, removed Curvature and some
-% outputs
+% outputs, added Z output
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
 % 1) where nframes is the total number of frames to be analyzed.  Trail
@@ -316,6 +316,12 @@ bait = [];
 L = [];
 nL = [];
 zz = [];
+zmouse = [];
+ztrial = [];
+zbait = [];
+zconc = [];
+zdnT = [];
+zdT = [];
 for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
@@ -409,11 +415,11 @@ for iD=1:nD
     Ynp = cat(1,Ynp,yT0(In));
     
     
-%     C0 = Tortuosity1(dx,dy,dtime,m,d,postSmoothing);
-%     C = cat(1,C,C0);
+    %     C0 = Tortuosity1(dx,dy,dtime,m,d,postSmoothing);
+    %     C = cat(1,C,C0);
     %
-%     nC0 = Tortuosity1(ndx,ndy,dtime,m,d,postSmoothing);
-%     nC = cat(1,nC,nC0);
+    %     nC0 = Tortuosity1(ndx,ndy,dtime,m,d,postSmoothing);
+    %     nC = cat(1,nC,nC0);
     
     [~,L0] = SplineCurvature(x0,y0);
     L = cat(1,L,L0);
@@ -422,6 +428,20 @@ for iD=1:nD
     zz = cat(1,zz,zz0);
     nL = cat(1,nL,nL0);
     
+    nT = length(xT0);
+    zdT0 = nan(size(nL0));
+    zdnT0 = nan(size(nL0));
+    for iP=1:nT
+        [zdT0(iP),I(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
+        [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
+    end
+    zdT = cat(1,zdT,zdT0);
+    zdnT = cat(1,zdnT,zdnT0);
+    zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1]));
+    ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
+    zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
+    zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
+    
     % compute idphi
     idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
     nidphi0 = zIdPhi1(ndx,ndy,dtime,m,d,postSmoothing);
@@ -429,11 +449,11 @@ for iD=1:nD
     idphi = cat(1,idphi,idphi0);
     nidphi = cat(1,nidphi,nidphi0);
     
-%     zidphi= cat(1,zidphi,nanzscore(abs(idphi0)));
-%     znidphi= cat(1,znidphi,nanzscore(abs(nidphi0)));
+    %     zidphi= cat(1,zidphi,nanzscore(abs(idphi0)));
+    %     znidphi= cat(1,znidphi,nanzscore(abs(nidphi0)));
     
-%     zC = cat(1,zC,nanzscore(abs(C0)));
-%     znC = cat(1,znC,nanzscore(abs(nC0)));
+    %     zC = cat(1,zC,nanzscore(abs(C0)));
+    %     znC = cat(1,znC,nanzscore(abs(nC0)));
     
     if strcmp(pathType,'Y') % compute additional parameters
         dTc0 = nan(length(x0),1);
@@ -483,7 +503,7 @@ for iD=1:nD
         
     end
     if readXLS
-        mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1])); 
+        mouse = cat(1,mouse,repmat(mouse0(iD),[length(x0),1]));
         trial = cat(1,trial,repmat(trial0(iD),[length(x0),1]));
         conc = cat(1,conc,repmat(conc0(iD),[length(x0),1]));
         bait = cat(1,bait,repmat(bait0(iD),[length(x0),1]));
@@ -515,6 +535,16 @@ if strcmp(pathType,'Y')
 else
     Y = [];
 end
+
+Z.zmouse = zmouse;
+Z.zbait = zbait;
+Z.zconc = zconc;
+Z.ztrial = ztrial;
+Z.zdT = zdT;
+Z.zdnT = zdnT;
+Z.zz = zz;
+Z.L = L;
+Z.nL = nL;
 
 
 end
