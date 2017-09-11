@@ -313,7 +313,6 @@ Yarm = cell(3,1);
 dTarm = cell(3,1);
 dnTarm = cell(3,1);
 bait = [];
-L = [];
 nL = [];
 zz = [];
 zmouse = [];
@@ -321,7 +320,6 @@ ztrial = [];
 zbait = [];
 zconc = [];
 zdnT = [];
-zdT = [];
 for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
@@ -421,8 +419,6 @@ for iD=1:nD
     %     nC0 = Tortuosity1(ndx,ndy,dtime,m,d,postSmoothing);
     %     nC = cat(1,nC,nC0);
     
-    [~,L0] = SplineCurvature(x0,y0);
-    L = cat(1,L,L0);
     
     [zz0,nL0] = SplineCurvature(nx0,ny0);
     zz = cat(1,zz,zz0);
@@ -432,10 +428,8 @@ for iD=1:nD
     zdT0 = nan(size(nL0));
     zdnT0 = nan(size(nL0));
     for iP=1:nT
-        [zdT0(iP),I(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
     end
-    zdT = cat(1,zdT,zdT0);
     zdnT = cat(1,zdnT,zdnT0);
     zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1]));
     ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
@@ -540,10 +534,8 @@ Z.zmouse = zmouse;
 Z.zbait = zbait;
 Z.zconc = zconc;
 Z.ztrial = ztrial;
-Z.zdT = zdT;
 Z.zdnT = zdnT;
 Z.zz = zz;
-Z.L = L;
 Z.nL = nL;
 
 
