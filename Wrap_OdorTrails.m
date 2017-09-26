@@ -88,8 +88,8 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,
 
 homedir = cd;
 
-readXLS = true;
-pathType = 'Y';
+readXLS = false;
+pathType = 'spot';
 postSmoothing = 0.2; % s
 %window = 0.5; % s
 m = 50;
@@ -320,7 +320,7 @@ ztrial = [];
 zbait = [];
 zconc = [];
 zdnT = [];
-for iD=1:nD
+for iD=100:150
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
     load(positFiles(iD).name,'position_results');
@@ -331,8 +331,14 @@ for iD=1:nD
         load(compFiles(iD).name,'xC0','yC0','xC','yC','outside','inside','vec','arm');
     end
     
+    % get edgeflag
+    if strcmp(pathType,'spot');
+        xTtemp = nanmedian(yT);
+        yTtemp = nanmedian(yT);
+        notedge = xTtemp > 50 & xTtemp < (1280-50) & yTtemp > 50 & yTtemp < (1024-50);
+    end
     %    code to process the position output from optimouse
-    [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame);
+    [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame,~notedge);
     
     % code to get mouse1 / sess1, should be identical to mouse/sess from
     % xls file
@@ -425,7 +431,7 @@ for iD=1:nD
     nL = cat(1,nL,nL0);
     
     nT = length(xT0);
-    zdT0 = nan(size(nL0));
+    %zdT0 = nan(size(nL0));
     zdnT0 = nan(size(nL0));
     for iP=1:nT
         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
