@@ -10,6 +10,7 @@ nM = max(mouse);
 nS = max(sess);
 
 R = nan(nR,nM,nS);
+Rrat = nan(nR,nM,nS);
 randR = nan(nR,nM,nS);
 for iM=1:nM
     for iS=1:nS
@@ -58,7 +59,7 @@ for iM=1:nM
                 
                 %area=1;
                 R(iR,iM,iS) = nansum(inR)./(50*area);
-                
+                Rrat(iR,iM,iS) = nansum(inR)./(50*area*length(x0));
                 
                 randR(iR,iM,iS) = nansum(inRrand)./(50*area);
             end

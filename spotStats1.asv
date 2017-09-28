@@ -203,12 +203,8 @@ zR = nan(size(R)); for iM=1:nM; k = mouse1==iM & R~=0; zR(k) = nanzscore(log10(R
 [p,table,stats] = anovan(zRrat(:),{mouse1(:)},'varnames',{'mouse'},'model','full');
 
 % test effect of session and trial
-[p,table,stats] = anovan(zRrat(:),{trial1(:),sess1(:)},'varnames',{'trial','sess1'},'continuous',2,'model','full');
+[p,table,stats] = anovan(zRrat(:),{sess1(:),trial1(:)},'varnames',{'sess','trial'},'model','full');
 
-% for some reason initial distance for even trials is lower (?)
-[p,table,stats]=anova1(initD(:),trial0(:));
-
-% for some reason even / odd trials group together (?)
 clf;
 mseb(radii,(nanmean((zRrat(:,trial0==1)),2))',nanstderr(zRrat(:,trial0==1),[],2)',blue);
 mseb(radii,(nanmean((zRrat(:,trial0==2)),2))',nanstderr(zRrat(:,trial0==2),[],2)',black);
@@ -216,37 +212,25 @@ mseb(radii,(nanmean((zRrat(:,trial0==3)),2))',nanstderr(zRrat(:,trial0==3),[],2)
 mseb(radii,(nanmean((zRrat(:,trial0==4)),2))',nanstderr(zRrat(:,trial0==4),[],2)',red);
 mseb(radii,(nanmean((zRrat(:,trial0==5)),2))',nanstderr(zRrat(:,trial0==5),[],2)',cyan);
 legend('1','2','3','4','5');
+% plotting, no clear differences
+
 
 % test for effect of radius, bait, spot found
 [p,table,stats] = anovan(zRrat(:),{radii1(:),bait1(:),spotfound1(:)},'varnames',{'radii','bait','found'},'model','full');
 
 
-% limit to radius <= 15cm
-k = radii1 <= 15;
 
-[p,table,stats] = anovan(zRrat(k),{bait1(k),spotfound1(k)},'varnames',{'bait','found'},'model','full');
-clf;
-mseb(radii,(nanmean((zRrat(:,bait0==0 & spotfound==0)),2))',nanstderr(zRrat(:,bait0==0 & spotfound==0),[],2)',blue);
-mseb(radii,(nanmean((zRrat(:,bait0==0 & spotfound==1)),2))',nanstderr(zRrat(:,bait0==0 & spotfound==1),[],2)',black);
-mseb(radii,(nanmean((zRrat(:,bait0==1 & spotfound==0)),2))',nanstderr(zRrat(:,bait0==1 & spotfound==0),[],2)',green);
-mseb(radii,(nanmean((zRrat(:,bait0==1 & spotfound==1)),2))',nanstderr(zRrat(:,bait0==1 & spotfound==1),[],2)',red);
-legend('not-not','not-found','bait-not','bait-found');
+
+% limit to radius <= 15cm
+k = radii1 <= 15 & ~isnan(sess1);
 
 % test for effect of bait and prev trial...some minor interactions
 [p,table,stats] = anovan(zRrat(k),{prevT1(k),bait1(k),spotfound1(k)},'varnames',{'prevT','bait','found'},'model','full');
-boxplot(zRrat(k),{prevT1(k)},'notch','on');
 
-% mice explore closer to the spot more frequently following unbaited trials
+% test for effect of concentration  N/A
+[p,table,stats] = anovan(zRrat(k),{conc1(k)},'varnames',{'conc1'},'model','full');
 
-clf;
-mseb(radii,(nanmean((zRrat(:,prevT0==0)),2))',nanstderr(zRrat(:,prevT0==0),[],2)',blue);
-mseb(radii,(nanmean((zRrat(:,prevT0==1)),2))',nanstderr(zRrat(:,prevT0==1),[],2)',black);
-legend('prev trial unbaited','prev trial baited');
 
-clf;
-mseb(radii,(nanmean((zRrat(:,prevT0==0 & bait0==0)),2))',nanstderr(zRrat(:,prevT0==0 & bait0==0),[],2)',blue);
-mseb(radii,(nanmean((zRrat(:,prevT0==0 & bait0==1)),2))',nanstderr(zRrat(:,prevT0==0 & bait0==1),[],2)',black);
-mseb(radii,(nanmean((zRrat(:,prevT0==1 & bait0==0)),2))',nanstderr(zRrat(:,prevT0==1 & bait0==0),[],2)',green);
-mseb(radii,(nanmean((zRrat(:,prevT0==1 & bait0==1)),2))',nanstderr(zRrat(:,prevT0==1 & bait0==1),[],2)',red);
-legend('unbaited-unbaited','unbaited-baited','baited-unbaited','baited-baited');
+
+
 

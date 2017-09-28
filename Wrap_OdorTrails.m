@@ -319,8 +319,9 @@ zmouse = [];
 ztrial = [];
 zbait = [];
 zconc = [];
+zsess = [];
 zdnT = [];
-for iD=100:150
+for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
     load(positFiles(iD).name,'position_results');
@@ -437,11 +438,16 @@ for iD=100:150
         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
     end
     zdnT = cat(1,zdnT,zdnT0);
-    zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1]));
-    ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
-    zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
-    zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
-    
+    if readXLS
+        zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1])); %#ok<UNRCH>
+        zsess = cat(1,zsess,repmat(sess0(iD),[length(nL0),1])); %#ok<UNRCH>
+        ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
+        zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
+        zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
+    else
+        zmouse = cat(1,zmouse,repmat(iM,[length(nL0),1]));
+        zsess = cat(1,zsess,repmat(iS,[length(nL0),1]));
+    end
     % compute idphi
     idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
     nidphi0 = zIdPhi1(ndx,ndy,dtime,m,d,postSmoothing);

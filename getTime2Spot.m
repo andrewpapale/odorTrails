@@ -3,7 +3,7 @@
 % gets time to spot / trail
 
 doTest = false;
-threshold = 0.5; % cm (max dist to spot to indicate spot is found)
+threshold = 1; % cm (max dist to spot to indicate spot is found)
 leavethreshold = 10; % cm (max dist from spot to indicate spot is left)
 minT = 0.2; % s (minimum time @ spot to consider spot found)
 postSmoothing = 0.1; % s
@@ -20,6 +20,7 @@ minD = nan(nM,nS);
 dwellT = nan(nM,nS);
 sess0 = nan(nM,nS);
 mouse0 = nan(nM,nS);
+trial0 = nan(nM,nS);
 spotfound = nan(nM,nS);
 quadrant = nan(nM,nS);
 conc0 = nan(nM,nS);
@@ -48,12 +49,14 @@ for iM=1:nM
             quadrant(iM,iS)=4;
         end
         
+        k1 = k0 & frame==1;
         
         if sum(k0)>0
             sess0(iM,iS)=iS;
             mouse0(iM,iS)=iM;
-            conc0(iM,iS)=mode(conc(k0));
-            bait0(iM,iS)=mode(bait(k0));
+            trial0(iM,iS)=trial(k1);
+            conc0(iM,iS)=conc(k1);
+            bait0(iM,iS)=bait(k1);
             initD(iM,iS) = dnT0(find(~isnan(dnT0),1,'first'));
             minD(iM,iS) = nanmin(dnT0);
             firstT = find(dnT0<threshold,1,'first');
