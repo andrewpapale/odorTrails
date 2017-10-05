@@ -3,7 +3,7 @@ function Test_VT(x0,y0,nx0,ny0,name,startFrame)
 % Test_VT(x0,y0,nx0,ny0,arena_data)
 % to plot and test the processed body/nose coordinates
 
-doVideo = true;
+doVideo = false;
 
 F = figure(2); clf;
 %clf; imagesc(arena_data.MedianImage); hold on;
@@ -21,7 +21,7 @@ disp(movieFile.name);
 v = VideoReader(movieFile.name);
 video = read(v,[startFrame 1000+startFrame]); %#ok<VIDREAD>
 
-for iT=startFrame:1000+startFrame;
+for iT=1:1001;
     imagesc(squeeze(video(:,:,:,iT))); hold on;
     if iT>10
         P = plot(x0(iT-10:iT),y0(iT-10:iT),'r.','markersize',20);

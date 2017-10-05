@@ -38,7 +38,7 @@ else
     warning('spot is at the edge for this trial...using truncated border of 1 pixel');
     notedge = x > 1 & x <(1280-1) & y > 1 & y < (1024-1);
 end
-    
+
 nx0 = nx;
 ny0 = ny;
 nx0(~notedge)=nan;
@@ -64,16 +64,10 @@ y0(~k)=nan;
 nx0(~k)=nan;
 ny0(~k)=nan;
 
-nS = ceil(postSmoothing/dT);
-x0(notedge)= medfilt1(x0(notedge),nS,'omitnan','truncate');
-y0(notedge)= medfilt1(y0(notedge),nS,'omitnan','truncate');
-nx0(notedge)= medfilt1(nx0(notedge),nS,'omitnan','truncate');
-ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
-
 dx = foaw_diff(x0,dT,m,d,postSmoothing);
 dy = foaw_diff(y0,dT,m,d,postSmoothing);
 V = sqrt(dx.^2+dy.^2)./11.2; % cm/s
-k = V < 200 & dx < 200 & dy < 200;
+k = V < 1000 & dx < 1000 & dy < 1000;
 x0(~k)=nan;
 y0(~k)=nan;
 nx0(~k)=nan;
@@ -83,10 +77,35 @@ ny0(~k)=nan;
 dnx = foaw_diff(nx0,dT,m,d,postSmoothing);
 dny = foaw_diff(ny0,dT,m,d,postSmoothing);
 nV = sqrt(dnx.^2+dny.^2)./11.2; % cm/s
-k = nV < 200 & dnx < 200 & dny < 200;
+k = V < 1000 & dx < 1000 & dy < 1000;
 nx0(~k)=nan;
 ny0(~k)=nan;
 
+
+nS = ceil(postSmoothing/dT);
+x0(notedge)= medfilt1(x0(notedge),nS,'omitnan','truncate');
+y0(notedge)= medfilt1(y0(notedge),nS,'omitnan','truncate');
+nx0(notedge)= medfilt1(nx0(notedge),nS,'omitnan','truncate');
+ny0(notedge)= medfilt1(ny0(notedge),nS,'omitnan','truncate');
+
+% remove discontinuous 'jumps' in data
+k=1;
+while any(k)
+    fx = find(~isnan(x0));
+    dfx = diff(x0(fx))./diff(fx);
+    dfy = diff(y0(fx))./diff(fx);
+    V = sqrt(dfx.^2+dfy.^2);
+    k = V > 100;
+    x0(fx(k))=nan;
+    y0(fx(k))=nan;
+    nx0(fx(k))=nan;
+    ny0(fx(k))=nan;
+end
+
+% x0(notedge) = cmddenoise(x0(notedge),'db2',2,'s');
+% y0(notedge) = cmddenoise(y0(notedge),'db2',2,'s');
+% nx0(notedge) = cmddenoise(nx0(notedge),'db2',2,'s');
+% ny0(notedge) = cmddenoise(ny0(notedge),'db2',2,'s');
 
 if doTest
     figure(2); clf;
