@@ -53,7 +53,9 @@ for iM=1:nM
             end
             
             figure(1); clf;
-            imagesc(squeeze(video(:,:,:,iFrame)));
+            temp = gpuArray(squeeze(video(:,:,:,iFrame)));
+            temp = imadjust(temp,[0; 0.25],[]);
+            imagesc(temp);
             hold on;
             axis xy
             x = position_results.mouseCOM(iFrame,1);

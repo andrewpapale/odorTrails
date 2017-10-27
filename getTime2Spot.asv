@@ -39,17 +39,17 @@ for iM=1:nM
         xT0 = nanmedian(xT1(kT));
         yT0 = nanmedian(yT1(kT));
         
-        if xT0<50 | xT0>1280-50 | yT0<50 | yT0>1024-50 %#ok<OR2>
+        if xT0<50 | xT0<1280-50 | yT0<50 | yT0<1024-50 %#ok<OR2>
             t2s(iM,iS)=-40;
         else
             
-            if xT0 > 1280/2 && yT0 > 1024/2
+            if xT0 > 1280/2 && yT0 > 1018/2
                 quadrant(iM,iS)=1;
-            elseif xT0 > 1280/2 && yT0 < 1024/2
+            elseif xT0 > 1280/2 && yT0 < 1018/2
                 quadrant(iM,iS)=2;
-            elseif xT0 < 1280/2 && yT0 > 1024/2
+            elseif xT0 < 1280/2 && yT0 > 1018/2
                 quadrant(iM,iS)=3;
-            elseif xT0 < 1280/2 && yT0 < 1024/2
+            elseif xT0 < 1280/2 && yT0 < 1018/2
                 quadrant(iM,iS)=4;
             end
             
@@ -137,6 +137,6 @@ end
 
 
 disp('Percent of successful trials:');
-disp(sum(dwellT(:)>minT & t2s(:)>-1 & ~isnan(t2s(:)))./sum(~isnan(t2s(:)) & t2s(:)~=-40));
+disp(sum(dwellT(:)>minT & t2s(:)>-1 & ~isnan(t2s(:)))./sum(~isnan(t2s(:))));
 
 

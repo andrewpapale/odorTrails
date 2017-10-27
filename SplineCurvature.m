@@ -22,9 +22,9 @@ end
 
 % Loop over all positions
 for i = 1+(win-1)/2 : length(L0)-(win-1)/2
-    if ~mod(i,100000);
-        disp(i./(length(L0)-(win-1)/2));
-    end
+%     if ~mod(i,100000);
+%         disp(i./(length(L0)-(win-1)/2));
+%     end
     x_w = zz(i-(win-1)/2 : i+(win-1)/2, 1) ;
     y_w = zz(i-(win-1)/2 : i+(win-1)/2, 2) ;
     

@@ -35,7 +35,7 @@ y0 = y;
 if ~edgeflag
     notedge = x > 50 & x < (1280-50) & y > 50 & y < (1024-50);
 else
-    warning('spot is at the edge for this trial...using truncated border of 1 pixel');
+    %warning('spot is at the edge for this trial...using truncated border of 1 pixel');
     notedge = x > 1 & x <(1280-1) & y > 1 & y < (1024-1);
 end
 

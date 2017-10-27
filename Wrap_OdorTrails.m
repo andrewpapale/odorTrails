@@ -1,9 +1,10 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z] = Wrap_OdorTrails
-% [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z] = Wrap_OdorTrails
+function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z,Nmm,nLen,nanfs,ALorKP] = Wrap_OdorTrails
+% [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z,Nmm,nLen,nanfs,ALorKP] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
 % 2017-09-07 AndyP updated with SplineCurvature, removed Curvature and some
 % outputs, added Z output
+% 2017-10-25 AndyP modified to remove nans
 % Wrapper function to process and concatenate position data from optimouse
 % and extracted trails from getTrail_GUI3.  Position data and derivatives are in the format (nframes x
 % 1) where nframes is the total number of frames to be analyzed.  Trail
@@ -88,7 +89,7 @@ function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,
 
 homedir = cd;
 
-readXLS = false;
+readXLS = true;
 pathType = 'spot';
 postSmoothing = 0.2; % s
 %window = 0.5; % s
@@ -106,26 +107,28 @@ iM = 0;
 lastMouse = [];
 dateStr = [];
 bait0 = [];
+ALorKP0 = [];
 
 if readXLS
     
     % get trial numbers from xls sheet...
     warning('need to change directory and file name to match computer directory location for xls notesheet');
     cd('C:\Users\papalea\Documents\Data');
-    [num,text] = xlsread('Log_170427.xlsx',1,'A1:H176','basic'); % read xls sheet into matlab
+    %[num,text] = xlsread('Log_170427.xlsx',1,'A1:H176','basic'); % read xls sheet into matlab
+    [num,text] = xlsread('KP_AL_CombinedLog.xlsx','A1:H231');
     
-    for iS=2:size(text,1);
-        mousetemp = num(iS-1,2); % mice are always in second column, starting from row 1
+    for iS=1:size(text,1);
+        mousetemp = num(iS,2); % mice are always in second column, starting from row 1
         
-        for iT=4:8
+        for iT=1:5
             tempStr = text{iS,iT};
             switch pathType
                 case 'Y'
                     k = strfind(tempStr,'y');
                     k1 = strfind(tempStr,'Y');
-                    k4 = strfind(tempStr,'lowercase y');
-                    k2 = strfind(tempStr,'curvy');
-                    k3 = strfind(tempStr,'Curvy');
+                    k2 = strfind(tempStr,'lowercase y');
+                    k3 = strfind(tempStr,'curvy');
+                    k4 = strfind(tempStr,'Curvy');
                 case 'curvy'
                     k4 = strfind(tempStr,'curvy'); % k4 anywhere
                     k1 = strfind(tempStr,'Curvy'); % k1<5
@@ -147,12 +150,18 @@ if readXLS
                 otherwise
                     error('unknown pathType');
             end
-            if (~isempty(k) & k<5 | ~isempty(k1) & k1<5 | ~isempty(k4)) & isempty(k2) & isempty(k3) %#ok<OR2,AND2>
+            if (strcmp(pathType,'spot') && ~strcmp(tempStr,'')) || (strcmp(pathType,'Y') && (~isepmty(k) || ~isepmty(k1) || ~isempty(k2)) && (isempty(k3) && isempty(k4)))
+                goflag = true;
+            else
+                goflag = false;
+            end
+            if goflag
                 mouseName1 = cat(1,mouseName1,mousetemp);
-                dateStr = cat(1,dateStr,num(iS-1,1));
+                dateStr = cat(1,dateStr,num(iS,1));
+                ALorKP0 = cat(1,ALorKP0,num(iS,3));
                 %disp(mouse0);
-                disp(tempStr);
-                trial0 = cat(1,trial0,iT-3); % trial 1 is in column 4, trial 2 in column 5, etc.
+                %disp(tempStr);
+                trial0 = cat(1,trial0,iT); % trial 1 is in column 4, trial 2 in column 5, etc.
                 % code to update mouse0 / sess0
                 if lastMouse==mousetemp
                     iS0=iS0+1;
@@ -179,8 +188,9 @@ if readXLS
                 end
                 
                 kunbait = strfind(tempStr,'no');
-                if ~isempty(kunbait)
+                if ~isempty(kunbait);
                     bait0 = cat(1,bait0,0);
+                    disp(tempStr);
                 else
                     bait0 = cat(1,bait0,1);
                 end
@@ -207,54 +217,54 @@ assert(length(startFiles)==length(trailFiles),'error needs to be a start time fo
 
 if readXLS
     
-    % find missing positFiles
-    for iT=1:length(mouseName1);
-        currName = mouseName1(iT);
-        currDate = dateStr(iT);
-        flag = 0;
-        for iF=1:length(positFiles)
-            tempStr = strsplit(positFiles(iF).name,'_');
-            mouseStr = tempStr{1};
-            dateStr1 = tempStr{2}(1:10);
-            yr = dateStr1(3:4);
-            mo = dateStr1(6:7);
-            da = dateStr1(9:10);
-            dateStr1 = strcat(yr,mo,da);
-            if isequal(currDate,str2double(dateStr1)) && isequal(currName,str2double(mouseStr))
-                flag = 1;
-            else
-            end
-        end
-        if flag
-        else
-            disp(currName); disp(currDate);
-        end
-    end
-    
-    % find missing positFiles
-    for iT=1:length(positFiles);
-        tempStr = strsplit(positFiles(iT).name,'_');
-        mouseStr = tempStr{1};
-        dateStr1 = tempStr{2}(1:10);
-        yr = dateStr1(3:4);
-        mo = dateStr1(6:7);
-        da = dateStr1(9:10);
-        dateStr1 = strcat(yr,mo,da);
-        
-        flag = 0;
-        for iF=1:length(mouseName1)
-            currName = mouseName1(iF);
-            currDate = dateStr(iF);
-            if isequal(currDate,str2double(dateStr1)) && isequal(currName,str2double(mouseStr))
-                flag = 1;
-            else
-            end
-        end
-        if flag
-        else
-            disp(tempStr);
-        end
-    end
+    %     % find missing positFiles
+    %     for iT=1:length(mouseName1);
+    %         currName = mouseName1(iT);
+    %         currDate = dateStr(iT);
+    %         flag = 0;
+    %         for iF=1:length(positFiles)
+    %             tempStr = strsplit(positFiles(iF).name,'_');
+    %             mouseStr = tempStr{1};
+    %             dateStr1 = tempStr{2}(1:10);
+    %             yr = dateStr1(3:4);
+    %             mo = dateStr1(6:7);
+    %             da = dateStr1(9:10);
+    %             dateStr1 = strcat(yr,mo,da);
+    %             if isequal(currDate,str2double(dateStr1)) && isequal(currName,str2double(mouseStr))
+    %                 flag = 1;
+    %             else
+    %             end
+    %         end
+    %         if flag
+    %         else
+    %             disp(currName); disp(currDate);
+    %         end
+    %     end
+    %
+    %     % find missing positFiles
+    %     for iT=1:length(positFiles);
+    %         tempStr = strsplit(positFiles(iT).name,'_');
+    %         mouseStr = tempStr{1};
+    %         dateStr1 = tempStr{2}(1:10);
+    %         yr = dateStr1(3:4);
+    %         mo = dateStr1(6:7);
+    %         da = dateStr1(9:10);
+    %         dateStr1 = strcat(yr,mo,da);
+    %
+    %         flag = 0;
+    %         for iF=1:length(mouseName1)
+    %             currName = mouseName1(iF);
+    %             currDate = dateStr(iF);
+    %             if isequal(currDate,str2double(dateStr1)) && isequal(currName,str2double(mouseStr))
+    %                 flag = 1;
+    %             else
+    %             end
+    %         end
+    %         if flag
+    %         else
+    %             disp(tempStr);
+    %         end
+    %     end
     
     
     assert(length(positFiles)==length(trial0),'error notes in xls sheet missing entry or missing position file');
@@ -321,6 +331,11 @@ zbait = [];
 zconc = [];
 zsess = [];
 zdnT = [];
+Nmm = [];
+nLen = [];
+nanfs = [];
+ALorKP = [];
+
 for iD=1:nD
     cd(homedir);
     fprintf('%s %d/%d \n',trailFiles(iD).name,iD,nD);
@@ -333,13 +348,8 @@ for iD=1:nD
     end
     
     % get edgeflag
-    if strcmp(pathType,'spot');
-        xTtemp = nanmedian(yT);
-        yTtemp = nanmedian(yT);
-        notedge = xTtemp > 50 & xTtemp < (1280-50) & yTtemp > 50 & yTtemp < (1024-50);
-    end
     %    code to process the position output from optimouse
-    [x0,y0,nx0,ny0] = Process_VT(position_results,startFrame,~notedge);
+    [x0,y0,nx0,ny0,~,~,~,Nmm0,nL1] = Process_VT(position_results,startFrame,1);
     
     % code to get mouse1 / sess1, should be identical to mouse/sess from
     % xls file
@@ -353,9 +363,6 @@ for iD=1:nD
         iS=1;
     end
     lastMouse = mouseStr;
-    mouse1 = cat(1,mouse1,repmat(iM,[length(x0),1]));
-    sess1 = cat(1,sess1,repmat(iS,[length(x0),1]));
-    
     
     % Get trail coordinates.  Note y,x correctly switched from trailFile data.
     xT0 = yT;
@@ -383,10 +390,24 @@ for iD=1:nD
     nearY = cat(1,nearY,nearY0');
     
     % get position data
+    nanfs = cat(1,nanfs,isnan(x0));
+    %     knan = isnan(x0);
+    %     x0 = x0(~knan);
+    %     y0 = y0(~knan);
+    %     nx0 = nx0(~knan);
+    %     ny0 = ny0(~knan);
+    %     Nmm0 = Nmm0(~knan);
+    %     nL1 = nL1(~knan);
+    
     x = cat(1,x,x0);
     y = cat(1,y,y0);
     nx = cat(1,nx,nx0);
     ny = cat(1,ny,ny0);
+    Nmm = cat(1,Nmm,Nmm0');
+    nLen = cat(1,nLen,nL1);
+    mouse1 = cat(1,mouse1,repmat(iM,[length(x0),1]));
+    sess1 = cat(1,sess1,repmat(iS,[length(x0),1]));
+    
     
     % get frame data
     frame = cat(1,frame,(1:length(x0))');
@@ -514,6 +535,7 @@ for iD=1:nD
         conc = cat(1,conc,repmat(conc0(iD),[length(x0),1]));
         bait = cat(1,bait,repmat(bait0(iD),[length(x0),1]));
         sess = cat(1,sess,repmat(sess0(iD),[length(x0),1]));
+        ALorKP = cat(1,ALorKP,repmat(ALorKP0(iD),[length(x0),1]));
         mouseT = cat(1,mouseT,repmat(mouse0(iD),[length(xT0),1]));
         sessT = cat(1,sessT,repmat(sess0(iD),[length(xT0),1]));
     else
