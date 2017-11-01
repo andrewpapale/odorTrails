@@ -87,38 +87,6 @@ nansum(hitmiss(k) & mouse0(k)==2)./nansum(mouse0(k)==2)  % 60
 nansum(hitmiss(k) & mouse0(k)==3)./nansum(mouse0(k)==3)  % 51
 nansum(hitmiss(k) & mouse0(k)==4)./nansum(mouse0(k)==4)  % 67
 nansum(hitmiss(k) & mouse0(k)==5)./nansum(mouse0(k)==5)  % 77
-
-%mouse x ALorKP
-% AL
-nansum(hitmiss(k) & mouse0(k)==1 & ALorKP0(k)==0)./nansum(mouse0(k)==1 & ALorKP0(k)==0)  % 81
-nansum(hitmiss(k) & mouse0(k)==2 & ALorKP0(k)==0)./nansum(mouse0(k)==2 & ALorKP0(k)==0)  % 78
-nansum(hitmiss(k) & mouse0(k)==3 & ALorKP0(k)==0)./nansum(mouse0(k)==3 & ALorKP0(k)==0)  % 69 
-nansum(hitmiss(k) & mouse0(k)==4 & ALorKP0(k)==0)./nansum(mouse0(k)==4 & ALorKP0(k)==0)  % 81
-nansum(hitmiss(k) & mouse0(k)==5 & ALorKP0(k)==0)./nansum(mouse0(k)==5 & ALorKP0(k)==0)  % 87
-% KP
-nansum(hitmiss(k) & mouse0(k)==1 & ALorKP0(k)==1)./nansum(mouse0(k)==1 & ALorKP0(k)==1)  % 44
-nansum(hitmiss(k) & mouse0(k)==2 & ALorKP0(k)==1)./nansum(mouse0(k)==2 & ALorKP0(k)==1)  % 51
-nansum(hitmiss(k) & mouse0(k)==3 & ALorKP0(k)==1)./nansum(mouse0(k)==3 & ALorKP0(k)==1)  % 39 
-nansum(hitmiss(k) & mouse0(k)==4 & ALorKP0(k)==1)./nansum(mouse0(k)==4 & ALorKP0(k)==1)  % 56
-nansum(hitmiss(k) & mouse0(k)==5 & ALorKP0(k)==1)./nansum(mouse0(k)==5 & ALorKP0(k)==1)  % 63
-% conclusion all mice have reduced performance for KP
-% question, is this because there are more unbaited trials for KP?
-
-nansum(bait0(k)==0 & ALorKP0(k)==0) % 152
-nansum(bait0(k)==0 & ALorKP0(k)==1) % 199
-
-% maybe, look at baited/unbaited separately
-nansum(hitmiss(k) & bait0(k)==0 & ALorKP0(k)==0)./nansum(bait0(k)==0 & ALorKP0(k)==0) % 59
-nansum(hitmiss(k) & bait0(k)==1 & ALorKP0(k)==0)./nansum(bait0(k)==1 & ALorKP0(k)==0) % 93
-
-nansum(hitmiss(k) & bait0(k)==0 & ALorKP0(k)==1)./nansum(bait0(k)==0 & ALorKP0(k)==1) % 34
-nansum(hitmiss(k) & bait0(k)==1 & ALorKP0(k)==1)./nansum(bait0(k)==1 & ALorKP0(k)==1) % 62
-
-% conclusion: performance is reduced for both baited and unbaited
-% conditions
-
-
-
 %
 %
 %
