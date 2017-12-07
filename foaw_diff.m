@@ -31,7 +31,7 @@ if ~isempty(y0)
             if (window_len > 1)
                 c = y0(k) - slope * k * Ts;
                 
-                % Check every point from k to k-i
+                % Check every point from k to k-j
                 for j = 1 : window_len - 1
                     delta = y0(k - j) - (c + slope * (k - j) * Ts);
                     if (abs(delta) > 2*d)
@@ -44,7 +44,7 @@ if ~isempty(y0)
                 
             end %% end if
             
-            if can_increase_window == false;
+            if can_increase_window == false
                 break;
             end
         end

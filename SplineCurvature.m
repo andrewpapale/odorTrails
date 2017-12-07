@@ -6,14 +6,14 @@ function [zz,L0] = SplineCurvature(x0,y0)
 %k = ~isnan(x0) & ~isnan(y0);
 
 % Interp points equidistant along arc length
-pt_density = 11.2; %per unit arcl length (assume cm for most trail data)
+pt_density = 21.2; %per unit arcl length (assume cm for most trail data)
 arcl = nansum( sqrt( diff(x0).^2 + diff(y0).^2 ) );
 zz = interparc(roundn(pt_density*arcl,0),x0,y0,'linear');
 
 L0 = nan(length(zz),1);
 
 % Window size
-res = 1/250; % Resolution scaling term; eg, window length = 2% total length
+res = 1/150; % Resolution scaling term; eg, window length = 2% total length
 win = roundn(res*length(zz),0);
 
 if mod(win,2)==0

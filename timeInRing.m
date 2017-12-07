@@ -12,6 +12,13 @@ nS = max(sess);
 R = nan(nR,nM,nS);
 Rrat = nan(nR,nM,nS);
 randR = nan(nR,nM,nS);
+radii0 = nan(nR,nM,nS);
+sess0 = nan(nR,nM,nS);
+trial0 = nan(nR,nM,nS);
+conc0 = nan(nR,nM,nS);
+mouse0 = nan(nR,nM,nS);
+ALorKP0 = nan(nR,nM,nS);
+bait0 = nan(nR,nM,nS);
 for iM=1:nM
     for iS=1:nS
         k = mouse==iM & sess==iS;
@@ -63,6 +70,15 @@ for iM=1:nM
                 
                 randR(iR,iM,iS) = nansum(inRrand)./(50*area);
             end
+            
+            
+            radii0(:,iM,iS)=radius./11.2;
+            conc0(:,iM,iS)=repmat(mode(conc(k)),[nR,1]);
+            sess0(:,iM,iS)=repmat(mode(sess(k)),[nR,1]);
+            mouse0(:,iM,iS)=repmat(mode(mouse(k)),[nR,1]);
+            ALorKP0(:,iM,iS)=repmat(mode(ALorKP(k)),[nR,1]);
+            trial0(:,iM,iS)=repmat(mode(trial(k)),[nR,1]);
+            bait0(:,iM,iS)=repmat(mode(bait(k)),[nR,1]);
         end
     end
 end

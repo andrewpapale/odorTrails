@@ -1,5 +1,8 @@
-%getTime2Spot
+function [initD,t2s,spotfound,dwellT,quadrant,t2s2,t2s3,initO]=getTime2Spot2(mouse,sess,dnT,x,y,nx,ny,frame);
+
+%getTime2Spot2
 % 2017-07-13 AndyP
+% 2017-11-28 AndyP same as getTime2SPot but a function
 % gets time to spot / trail
 
 doTest = false;
@@ -29,7 +32,7 @@ t2s2 = nan(nM,nS);
 t2s3 = nan(nM,nS);
 ALorKP0 = nan(nM,nS);
 initO = nan(nM,nS);
-nframe = nan(nM,nS);
+%nframe = nan(nM,nS);
 meanV = nan(nM,nS);
 meannV = nan(nM,nS);
 xT = nan(nM,nS);
@@ -42,7 +45,7 @@ for iM=1:nM
         
         if sum(k0)>0
             
-            nframe(iM,iS)=nansum(k0);
+            %nframe(iM,iS)=nansum(k0);
             
             dnT0 = dnT(k0);
             frame0 = frame(k0);
@@ -73,10 +76,10 @@ for iM=1:nM
                 
                 sess0(iM,iS)=iS;
                 mouse0(iM,iS)=iM;
-                trial0(iM,iS)=mode(trial(k0));
-                conc0(iM,iS)=mode(conc(k0));
-                bait0(iM,iS)=mode(bait(k0));
-                ALorKP0(iM,iS)=mode(ALorKP(k0));
+                %trial0(iM,iS)=mode(trial(k0));
+                %conc0(iM,iS)=mode(conc(k0));
+                %bait0(iM,iS)=mode(bait(k0));
+                %ALorKP0(iM,iS)=mode(ALorKP(k0));
                 meanV(iM,iS)=nanmean(V(k0));
                 meannV(iM,iS)=nanmean(nV(k0));
                 xT(iM,iS) = xT0;

@@ -1,4 +1,4 @@
-% RingTransitionMatrix
+% RingTransitionMatrix2
 % 2017-08-08 AndyP
 % get transition matrix for found/not found trials
 
@@ -12,11 +12,14 @@ nS = max(sess);
 iC=1;
 iD=1;
 iE=1;
-foundR = [];
-notR = [];
+iF = 1;
+A = [];
+B = [];
+C = [];
 ktime = round(nanmedian(t2s(t2s>0))*50);
-Cfound = [];
-Cnot = [];
+CA = [];
+CB = [];
+CC = [];
 Crand = [];
 for iM=1:nM
     for iS=1:nS
@@ -39,14 +42,14 @@ for iM=1:nM
             %disp(size(x0));
             
             kyes = t2s(iM,iS)>0;
-            kno = t2s(iM,iS)==-20;
+            kA = conc0(iM,iS)==0 & bait0(iM,iS)==0;
+            kB = conc0(iM,iS)==1 & bait0(iM,iS)==0;
+            kC = conc0(iM,iS)==2 & bait0(iM,iS)==0;
             
-            if kyes | kno
+            if kyes & (kA | kB | kC)
                 
-                if kyes
-                    ktime = round(t2s(iM,iS)*50)+500;
-                else % do not update ktime
-                end
+                ktime = round(t2s(iM,iS)*50)+500;
+                %ktime = length(x0);
                 
                 %disp(min(length(x0),ktime));
                 
@@ -81,25 +84,52 @@ for iM=1:nM
                     
                     keep = ~isnan(inR);
                     
-                    if kyes
+                    
+                    if kA
                         if sum(keep)>0
-                            foundR(iR,iC) = nansum(inR(keep))./(50*area);
+                            A(iR,iC)=nansum(inR(keep))./(50*area);
                         else
-                            foundR(iR,iC)=nan;
+                            A(iR,iC)=nan;
                         end
-                    elseif kno
-                        if sum(keep)>0
-                            notR(iR,iD)=nansum(inR(keep))./(50*area);
-                        else
-                            notR(iR,iD)=nan;
-                        end
-                        keep = ~isnan(inRrand);
-                        if sum(keep)>0
-                            randR(iR,iE) = nansum(inRrand(keep))./(50*area);
-                        else
-                            randR(iR,iE)=nan;
-                        end
+                        iC = iC+1;
                     end
+                    
+                    if kB
+                        if sum(keep)>0
+                            B(iR,iD)=nansum(inR(keep))./(50*area);
+                        else
+                            B(iR,iD)=nan;
+                        end
+                        iD = iD+1;
+                    end
+                    if kC
+                        if sum(keep)>0
+                            C(iR,iF)=nansum(inR(keep))./(50*area);
+                        else
+                            C(iR,iF)=nan;
+                        end
+                        iF = iF+1;
+                    end
+                    
+                    %                     if kyes
+                    %                         if sum(keep)>0
+                    %                             foundR(iR,iC) = nansum(inR(keep))./(50*area);
+                    %                         else
+                    %                             foundR(iR,iC)=nan;
+                    %                         end
+                    %                     elseif kno
+                    %                         if sum(keep)>0
+                    %                             notR(iR,iD)=nansum(inR(keep))./(50*area);
+                    %                         else
+                    %                             notR(iR,iD)=nan;
+                    %                         end
+                    %                         keep = ~isnan(inRrand);
+                    %                         if sum(keep)>0
+                    %                             randR(iR,iE) = nansum(inRrand(keep))./(50*area);
+                    %                         else
+                    %                             randR(iR,iE)=nan;
+                    %                         end
+                    %                     end
                     if doTest
                         F = figure(1); clf;
                         plot(x0,y0,'k.');
@@ -112,16 +142,9 @@ for iM=1:nM
                         plot(x0(inR),y0(inR),'r.','markersize',5);
                         pause;
                     end
-                    
-                    
-                    
-                end
-                if kyes
-                    iC=iC+1;
-                elseif kno
-                    iD=iD+1;
-                end
+
                 iE=iE+1;
+                end
             end
         end
         
@@ -132,48 +155,48 @@ radii=radius./(11.2);
 
 for iR=1:nR
     for iQ=1:nR
-%                 Cfound(iR,iQ)=corr2(foundR(iR,:),foundR(iQ,:));
-%                 Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
-%                 Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
-        Cfound(iR,iQ) = mi(foundR(iR,:)',foundR(iQ,:)');
-        Cnot(iR,iQ) = mi(notR(iR,:)',notR(iQ,:)');
-        Crand(iR,iQ)=mi(randR(iR,:)',randR(iQ,:)');
+        %                 Cfound(iR,iQ)=corr2(foundR(iR,:),foundR(iQ,:));
+        %                 Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
+        %                 Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
+        CA(iR,iQ) = mi(A(iR,:)',A(iQ,:)');
+        CB(iR,iQ) = mi(B(iR,:)',B(iQ,:)');
+        CC(iR,iQ)=mi(C(iR,:)',C(iQ,:)');
     end
 end
 
 F = figure(1); clf;
 subplot(1,3,1);
-pcolor(radii,radii,Cfound); shading flat;
+pcolor(radii,radii,CA); shading flat;
 colorbar;
 %caxis([-0.5 1]);
-caxis([0 4]);
-title('Spot found','fontsize',21);
+caxis([0 0.01]);
+title('0.1%','fontsize',21);
 xlabel('radius (cm)','fontsize',21);
 ylabel('radius (cm)','fontsize',21);
 set(gca,'fontsize',18);
 subplot(1,3,2);
-pcolor(radii,radii,Cnot); shading flat;
+pcolor(radii,radii,CB); shading flat;
 %caxis([-0.5 1]);
-caxis([0 4]);
+caxis([0 0.01]);
 colorbar;
-title('Spot Missed','fontsize',21);
+title('1%','fontsize',21);
 xlabel('radius (cm)','fontsize',21);
 set(gca,'fontsize',18);
 subplot(1,3,3);
-pcolor(radii,radii,Crand); shading flat;
+pcolor(radii,radii,CC); shading flat;
 %caxis([-0.5 0.5]);
-caxis([0 4]);
+caxis([0 0.01]);
 colorbar;
-title('Random','fontsize',21);
+title('2%','fontsize',21);
 xlabel('radius (cm)','fontsize',21);
 set(gca,'fontsize',18);
 
 F = figure(2); clf;
-plot(radii,nanmean(Cfound,2),'linewidth',2);
+plot(radii,nanmean(A,2),'linewidth',2);
 hold on;
-plot(radii,nanmean(Cnot,2),'linewidth',2);
-plot(radii,nanmean(Crand,2),'linewidth',2);
-legend('found','missed','random');
+plot(radii,nanmean(B,2),'linewidth',2);
+plot(radii,nanmean(C,2),'linewidth',2);
+legend('0.1%','1%','2%');
 xlabel('radius (cm)','fontsize',21);
 ylabel('mean MI','fontsize',21);
 set(gca,'fontsize',18);

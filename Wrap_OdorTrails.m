@@ -429,18 +429,28 @@ for iD=1:nD
     I = nan(nP,1);
     dnT0 = nan(nP,1);
     In = nan(nP,1);
-    for iP=1:nP
-        [dT0(iP),I(iP)] = nanmin(sqrt((x0(iP)-xT0).^2+(y0(iP)-yT0).^2));
-        [dnT0(iP),In(iP)] = nanmin(sqrt((nx0(iP)-xT0).^2+(ny0(iP)-yT0).^2));
+    
+    if strcmp(pathType,'spot')    
+        mX = nanmedian(xT0);
+        mY = nanmedian(yT0);
+        dT0 = sqrt((x0-mX).^2+(y0-mY).^2);
+        dnT0 = sqrt((nx0-mX).^2+(ny0-mY).^2);
+    else
+        for iP=1:nP
+            [dT0(iP),I(iP)] = nanmin(sqrt((x0(iP)-xT0).^2+(y0(iP)-yT0).^2));
+            [dnT0(iP),In(iP)] = nanmin(sqrt((nx0(iP)-xT0).^2+(ny0(iP)-yT0).^2));
+        end
     end
     dT = cat(1,dT,dT0./11.2);
-    Xp = cat(1,Xp,xT0(I));
-    Yp = cat(1,Yp,yT0(I));
     dnT = cat(1,dnT,dnT0./11.2);
-    Xnp = cat(1,Xnp,xT0(In));
-    Ynp = cat(1,Ynp,yT0(In));
-    
-    
+    if strcmp(pathType,'spot')
+    else
+        Xp = cat(1,Xp,xT0(I));
+        Yp = cat(1,Yp,yT0(I));    
+        Xnp = cat(1,Xnp,xT0(In));
+        Ynp = cat(1,Ynp,yT0(In));
+    end
+
     %     C0 = Tortuosity1(dx,dy,dtime,m,d,postSmoothing);
     %     C = cat(1,C,C0);
     %
@@ -448,27 +458,27 @@ for iD=1:nD
     %     nC = cat(1,nC,nC0);
     
     
-    [zz0,nL0] = SplineCurvature(nx0,ny0);
-    zz = cat(1,zz,zz0);
-    nL = cat(1,nL,nL0);
+%     [zz0,nL0] = SplineCurvature(nx0,ny0);
+%     zz = cat(1,zz,zz0);
+%     nL = cat(1,nL,nL0);
     
-    nT = length(xT0);
-    %zdT0 = nan(size(nL0));
-    zdnT0 = nan(size(nL0));
-    for iP=1:nT
-        [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
-    end
-    zdnT = cat(1,zdnT,zdnT0);
-    if readXLS
-        zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1])); %#ok<UNRCH>
-        zsess = cat(1,zsess,repmat(sess0(iD),[length(nL0),1])); %#ok<UNRCH>
-        ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
-        zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
-        zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
-    else
-        zmouse = cat(1,zmouse,repmat(iM,[length(nL0),1]));
-        zsess = cat(1,zsess,repmat(iS,[length(nL0),1]));
-    end
+%     nT = length(xT0);
+%     %zdT0 = nan(size(nL0));
+%     zdnT0 = nan(size(nL0));
+%     for iP=1:nT
+%         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
+%     end
+%     zdnT = cat(1,zdnT,zdnT0);
+%     if readXLS
+%         zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1])); %#ok<UNRCH>
+%         zsess = cat(1,zsess,repmat(sess0(iD),[length(nL0),1])); %#ok<UNRCH>
+%         ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
+%         zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
+%         zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
+%     else
+%         zmouse = cat(1,zmouse,repmat(iM,[length(nL0),1]));
+%         zsess = cat(1,zsess,repmat(iS,[length(nL0),1]));
+%     end
     % compute idphi
     idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
     nidphi0 = zIdPhi1(ndx,ndy,dtime,m,d,postSmoothing);
