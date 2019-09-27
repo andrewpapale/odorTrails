@@ -42,9 +42,9 @@ function dphi = zIdPhi1(dx,dy,Ts,m,d,postSmoothing)
 
 % ddy = dxdt(dy,dT,window,postSmoothing);
 % ddx = dxdt(dx,dT,window,postSmoothing);
-ddx = foaw_diff(dx, Ts, m, d,postSmoothing);
-ddy = foaw_diff(dy, Ts, m, d,postSmoothing);
-dphi = (dx.*ddy-dy.*ddx)./(dx.^2+dy.^2);
+ddx = foaw_diff(dx(:), Ts, m, d,postSmoothing);
+ddy = foaw_diff(dy(:), Ts, m, d,postSmoothing);
+dphi = (dx(:).*ddy(:)-dy(:).*ddx(:))./(dx(:).^2+dy(:).^2);
 
 
 

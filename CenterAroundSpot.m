@@ -3,8 +3,8 @@
 
 nM = length(unique(mouse));
 nS = max(sess);
-window = 672; % pixels
-window = window./11.2;
+window = 200; % pixels
+window = window./5.174;
 nB = 20;
 
 H = [];
@@ -17,11 +17,11 @@ for iM=1:nM
         nx0 = nx(k0);
         ny0 = ny(k0);
         dnT0 = dnT(k0);
-        znidphi0 = znidphi(k0);
-        znC0 = znC(k0);
+        znidphi0 = log10dphi(k0);
+        %znC0 = znC(k0);
         
-        xT0 = nanmedian(xT1(kT));
-        yT0 = nanmedian(yT1(kT));
+        xT0 = cx0(iM,iS);
+        yT0 = cy0(iM,iS);
         
         kW = nx0 >= xT0-window & nx0 <= xT0+window & ny0 >= yT0-window & ny0 <= yT0+window;
          
@@ -35,6 +35,10 @@ for iM=1:nM
 %        pause;
         
         if sum(kW)>0
+            
+            
+            
+            
             H0 = histcn([nx0(kW),ny0(kW)],linspace(xT0-window,xT0+window,nB),linspace(yT0-window,yT0+window,nB),'AccumData',znidphi0(kW),'fun',@nanmean);
             H0 = padarray(H0,[nB-size(H0,1),nB-size(H0,2)],nan,'post');
             N0 = histcn([nx0(kW),ny0(kW)],linspace(xT0-window,xT0+window,nB),linspace(yT0-window,yT0+window,nB));

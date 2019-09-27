@@ -1,4 +1,4 @@
-function [initD,t2s,spotfound,dwellT,quadrant,t2s2,t2s3,initO]=getTime2Spot2(mouse,sess,dnT,x,y,nx,ny,frame,xT1,yT1)
+function [initD,t2s,spotfound,dwellT,quadrant,initO,initOb,spotring,dtraveled]=getTime2Spot2(mouse,sess,dnT,x,y,nx,ny,frame,xT1,yT1)
 
 %getTime2Spot2
 % 2017-07-13 AndyP
@@ -8,13 +8,13 @@ function [initD,t2s,spotfound,dwellT,quadrant,t2s2,t2s3,initO]=getTime2Spot2(mou
 
 threshold = 2; % cm (max dist to spot to indicate spot is found)
 leavethreshold = 10; % cm (max dist from spot to indicate spot is left)
-minT = 0.2; % s (minimum time @ spot to consider spot found)
+minT = 0.5; % s (minimum time @ spot to consider spot found)
 postSmoothing = 0.1; % s
 
 
 
 nSm = ceil(postSmoothing/(1/50));
-nM = length(unique(mouse));
+nM = max(mouse);
 nS = max(sess);
 
 initD = nan(nM,nS);
@@ -28,16 +28,20 @@ spotfound = nan(nM,nS);
 quadrant = nan(nM,nS);
 %conc0 = nan(nM,nS);
 %bait0 = nan(nM,nS);
-t2s2 = nan(nM,nS);
-t2s3 = nan(nM,nS);
+% t2s2 = nan(nM,nS);
+% t2s3 = nan(nM,nS);
 %ALorKP0 = nan(nM,nS);
 initO = nan(nM,nS);
+initOb = nan(nM,nS);
+spotring = nan(nM,nS);
+dtraveled = nan(nM,nS);
 %nframe = nan(nM,nS);
 %meanV = nan(nM,nS);
 %meannV = nan(nM,nS);
 %xT = nan(nM,nS);
 %yT = nan(nM,nS);
 iC = 0;
+dRing = linspace(0,1000,10);
 for iM=1:nM
     for iS=1:nS
         k0 = mouse==iM & sess==iS;
@@ -59,6 +63,8 @@ for iM=1:nM
             xT0 = xT1(iC);
             yT0 = yT1(iC);
             
+            spotring0 = sqrt((xT0-1280/2).^2+(yT0-1024/2).^2);
+            spotring(iM,iS)=find(hist(spotring0,dRing)==1,1,'first');
             
             if xT0<44.8 | xT0>1280-44.8 | yT0<44.8 | yT0>1024-44.8 %#ok<OR2>
                 t2s(iM,iS)=-40;
@@ -85,18 +91,27 @@ for iM=1:nM
                 %xT(iM,iS) = xT0;
                 %yT(iM,iS) = yT0;
                 %disp(ALorKP0(iM,iS));
-                initD(iM,iS) = dnT0(find(~isnan(dnT0),1,'first'));
                 %minD(iM,iS) = nanmin(dnT0);
                 firstT = find(dnT0<threshold,1,'first');
                 %A = [xT0-x0(1),yT0-y0(1)]./sqrt((yT0-y0(1)).^2+(xT0-x0(1)).^2);
                 %B = [nx0(1)-x0(1),ny0(1)-y0(1)]./sqrt((ny0(1)-y0(1)).^2+(nx0(1)-x0(1)).^2);
                 %initO(iM,iS)=dot(B,A)*180/pi;
-                A = atan2(yT0-y0(1),xT0-x0(1));
-                B = atan2(ny0(1)-y0(1),nx0(1)-x0(1));
-                initO(iM,iS)=angdiff(A,B)*180/pi;
+                k2 = find(~isnan(dnT0) & frame0 <= 50,1,'first');
+                if ~isempty(k2)
+                   A = nanmean(atan2(repmat(yT0,[10,1])-y0(k2:k2+9),repmat(xT0,[10,1])-x0(k2:k2+9)));
+                    B = nanmean(atan2(ny0(k2:k2+9)-y0(k2:k2+9),nx0(k2:k2+9)-x0(k2:k2+9)));
+                    initO(iM,iS)=angdiff(A,B)*180/pi;
+                    initOb(iM,iS)=A*180/pi;
+                    initD(iM,iS)=dnT0(k2);
+                end
                 if ~isempty(firstT)
                     
                     t2s(iM,iS)=frame0(firstT)/50;  % frames -> s
+                    
+                    if ~isempty(k2)
+                        dtraveled(iM,iS) = nansum(sqrt(nx0(k2:firstT).^2+ny0(k2:firstT).^2));
+                    end                    
+                    
                     % find dwell time @ spot
                     dnT0temp = dnT0(firstT:end);
                     dnT0temp = nanfastsmooth(dnT0temp,nSm,1,2);
@@ -106,13 +121,13 @@ for iM=1:nM
                         lastT = length(dnT0temp);
                     end
                     
-                    % find 2nd time to spot (if any)
-                    secondT = find(dnT0<threshold & frame0 > lastT+firstT,1,'first');
-                    if ~isempty(secondT)
-                        t2s2(iM,iS)=frame0(secondT)/50;
-                    else
-                        t2s2(iM,iS) = -20;
-                    end
+%                     % find 2nd time to spot (if any)
+%                     secondT = find(dnT0<threshold & frame0 > lastT+firstT,1,'first');
+%                     if ~isempty(secondT)
+%                         t2s2(iM,iS)=frame0(secondT)/50;
+%                     else
+%                         t2s2(iM,iS) = -20;
+%                     end
                     dwellT(iM,iS)=(frametemp(lastT)-frame0(firstT))/50;
                 else
                     t2s(iM,iS)= -20;

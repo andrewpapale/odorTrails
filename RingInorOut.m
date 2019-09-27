@@ -20,7 +20,7 @@ for iM=1:nM
         k = mouse==iM & sess==iS;
         kT = mouseT==iM & sessT==iS;
         
-        if sum(k)>0;
+        if sum(k)>0
             
             xT = nanmedian(xT1(kT));
             yT = nanmedian(yT1(kT));

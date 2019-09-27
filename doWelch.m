@@ -11,23 +11,20 @@ freqs = linspace(0.1,10,100);
 spotfound = [];
 for iM=1:nM
     for iS=1:nS
-        k = mouse==iM & sess==iS;
+        k = mouse==iM & sess==iS & ~edge;
         
         if sum(k)>0
             t2s0 = t2s(iM,iS);
-            nearX0 = nearX(k);
-            nearY0 = nearY(k);
-            edge = ~(nearX0>50 & nearY0>50 & nearX0<1280-50 & nearY0<1024-50);
             dnT0 = dnT(k);
-            dnT0(edge)=nan;
             
             if t2s0>0
                 t2s0 = round(t2s0*50);
                 flag = 0;
+                seg = [];
             elseif t2s0==-20
                 seg = find(~isnan(dnT0(1:500)));
             end
-            if ~isempty(seg)
+            if ~isempty(seg) && t2s(iM,iS)>-40
                 
                 alignit = seg(1)-1;
                 dseg = diff(seg);
@@ -75,7 +72,6 @@ for iM=1:nM
                 
                 % find equivalent length segment not going to spot
                 
-                orient0(edge) = nan;
                 seg = find(~isnan(orient0(t2s0+500:end)));
                 
                 if ~isempty(seg)
@@ -117,12 +113,16 @@ end
 
 
 figure(1); clf;
-lineProps.col = {'b'};
-mseb(freqs,nanmean(welchSpot(spotfound==0,:),1)',nanstderr(welchSpot(spotfound==0,:),[],1),lineProps);
-lineProps.col = {'r'};
-mseb(freqs,nanmean(welchSpot(spotfound==1,:),1)',nanstderr(welchSpot(spotfound==1,:),[],1),lineProps);
-lineProps.col = {'k'};
-mseb(freqs,nanmean(welchCont(spotfound==0,:),1)',nanstderr(welchCont(spotfound==0,:),[],1),lineProps);
-lineProps.col = {'g'};
-mseb(freqs,nanmean(welchCont(spotfound==1,:),1)',nanstderr(welchCont(spotfound==1,:),[],1),lineProps);
+%lineProps.col = {'b'};
+%mseb(freqs,nanmean(welchSpot(spotfound==0,:),1)',nanstderr(welchSpot(spotfound==0,:),[],1),lineProps);
+%lineProps.col = {'r'};
+%mseb(freqs,nanmean(welchSpot(spotfound==1,:),1)',nanstderr(welchSpot(spotfound==1,:),[],1),lineProps);
+%lineProps.col = {'k'};
+%mseb(freqs,nanmean(welchCont(spotfound==0,:),1)',nanstderr(welchCont(spotfound==0,:),[],1),lineProps);
+%lineProps.col = {'g'};
+%mseb(freqs,nanmean(welchCont(spotfound==1,:),1)',nanstderr(welchCont(spotfound==1,:),[],1),lineProps);
+plot(freqs,nanmean(log10(welchSpot(spotfound==0,:)),1),'b','linewidth',2); hold on;
+plot(freqs,nanmean(log10(welchSpot(spotfound==1,:)),1),'r','linewidth',2);
+plot(freqs,nanmean(log10(welchCont(spotfound==0,:)),1),'k','linewidth',2);
+plot(freqs,nanmean(log10(welchCont(spotfound==1,:)),1),'g','linewidth',2);
 legend('spot missed','spot found','control - missed','control - found');

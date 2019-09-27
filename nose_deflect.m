@@ -1,4 +1,4 @@
-function [ th_head, th_nose, th_bn ] = nose_deflect( x0, y0, nx0, ny0 )
+function [ th_head, th_nose, th_bn ] = nose_deflect( x0, y0, nx0, ny0)
 %nose_deflect takes x,y trajectories for nose nx0,ny0 and body x0,y0. For
 % frame indices t=2:end, it computes an estimate of forward heading th_head, the
 %relative nose direction (th_nose) and the angular difference between the
@@ -44,8 +44,8 @@ dt_gap = 10; % number of previous frames to average over when estimating forward
 
 for t = dt_gap+1:length(x0)
 %     th_head(t) =    atan2( y0(t) - y0(t-1) ,  x0(t) - x0(t-1)   );
-    th_head(t) =    atan2(  y0(t)-nanmean( y0(t-dt_gap:t-1) )     , x0(t)-nanmean(x0(t-dt_gap:t-1))   );
-    th_nose(t) =    atan2( ny0(t) - y0(t) ,  nx0(t) - x0(t)   );
-    th_bn(t)   =    angdiff(   th_head(t) , th_nose(t)   );
+    th_head(t) =    atan2d(  y0(t)-nanmean( y0(t-dt_gap:t-1) )     , x0(t)-nanmean(x0(t-dt_gap:t-1))   );
+    th_nose(t) =    atan2d( ny0(t) - y0(t) ,  nx0(t) - x0(t)   );
+    th_bn(t)   =    th_nose(t)-th_head(t);
 end
 

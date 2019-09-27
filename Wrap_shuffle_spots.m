@@ -3,7 +3,7 @@
 tic;
 
 nshuf = 100;
-nsess = 915;
+
 
 nM = max(mouse);
 
@@ -31,36 +31,96 @@ for iM=1:nM
    
 end
 
-initD = nan(915,1000);
-t2s = nan(915,1000);
-spotfound = nan(915,1000);
-dwellT = nan(915,1000);
-quadrant = nan(915,1000);
-t2s2 = nan(915,1000);
-t2s3 = nan(915,1000);
-initO = nan(915,1000);
+rT0 = xT<44.8 | xT>1280-44.8 | yT<44.8 | yT>1024-44.8;
+xT(rT0)=[];
+yT(rT0)=[];
+
+nsess = length(xT);
+
+sinitD = nan(nsess,nshuf);
+st2s = nan(nsess,nshuf);
+sspotfound = nan(nsess,nshuf);
+sdwellT = nan(nsess,nshuf);
+squadrant = nan(nsess,nshuf);
+sinitO = nan(nsess,nshuf);
+sinitOb = nan(nsess,nshuf);
+sspotring = nan(nsess,nshuf);
+ssess = nan(nsess,nshuf);
+smouse = nan(nsess,nshuf);
+sdtraveled = nan(nsess,nshuf);
+
 for ishuf = 1:nshuf
     
     % shuffle spots
     rng('shuffle');
     idx = randperm(length(xT));
+
+    % correct idx for if spot is the same
+    realidx = 1:nsess;
+        moveidx = [];
+        for iT=1:nsess
+            if idx(iT)==realidx(iT)
+                moveidx = cat(1,moveidx,idx(iT));
+            end
+        end
+        if length(moveidx)>1
+            for iT=1:length(moveidx)-1
+                idx(moveidx(iT))=moveidx(iT+1);
+            end
+            idx(moveidx(end))=moveidx(1);
+        elseif length(moveidx)==1
+            flag = true;
+            while flag
+                newidx = randi(nsess);
+                if newidx~=moveidx && idx(newidx)~=idx(moveidx)
+                    flag = false;
+                    tempidx = idx(moveidx);
+                    idx(moveidx)=idx(newidx);
+                    idx(newidx)=tempidx;
+                end
+            end
+        end
+        
+        assert(~any(realidx==idx),'error spots not shuffled!');
+
+    
     xT2 = xT(idx);
     yT2 = yT(idx);
     iC = 1;
     
     disp('computing distances...');
+    shufdnT = [];
+    nx2 = [];
+    ny2 = [];
+    frame2 = [];
+    mouse2 = [];
+    sess2 = [];
+    x2 = [];
+    y2 = [];
     for iM=1:nM
-        km = mouse==iM;
-        nS = nanmax(sess(km));
         for iS=1:nS
             
             k = mouse==iM & sess==iS;
+            kT = mouseT==iM & sessT==iS;
             
-            if sum(k)>0
+            tempx = nanmedian(xT1(kT));
+            tempy = nanmedian(yT1(kT));
+            
+            if sum(k)>0 && ~(tempx<44.8 | tempx>1280-44.8 | tempy<44.8 | tempy>1024-44.8) %#ok<OR2>
                 
+                mouse2 = cat(1,mouse2,mouse(k));
+                sess2 = cat(1,sess2,sess(k));
+                
+                x2 = cat(1,x2,x(k));
+                y2 = cat(1,y2,y(k));
                 
                 nx0 = nx(k);
                 ny0 = ny(k);
+                
+                nx2 = cat(1,nx2,nx0);
+                ny2 = cat(1,ny2,ny0);
+                
+                frame2 = cat(1,frame2,frame(k));
                 
                 xT0 = xT2(iC);
                 yT0 = yT2(iC);
@@ -68,26 +128,25 @@ for ishuf = 1:nshuf
                 
                 % calculate distance from trail
                 dnT0 = sqrt((nx0-xT0).^2+(ny0-yT0).^2);
-                
                 shufdnT = cat(1,shufdnT,dnT0);
             end
         end
-        
     end
     
-    [initD0,t2s0,spotfound0,dwellT0,quadrant0,t2s20,t2s30,initO0]=...
-        getTime2Spot2(mouse,sess,shufdnT,x,y,nx,ny,frame,xT2,yT2);
+    [initD0,t2s0,spotfound0,dwellT0,quadrant0,initO0,initOb0,spotring0,dtraveled0]=...
+        getTime2Spot2(mouse2,sess2,shufdnT,x2,y2,nx2,ny2,frame2,xT2,yT2);
     
     k = ~isnan(t2s0);
     
-    initD(:,ishuf) = initD0(k);
-    t2s(:,ishuf) = t2s0(k);
-    spotfound(:,ishuf) = spotfound0(k);
-    dwellT(:,ishuf) = dwellT0(k);
-    quadrant(:,ishuf) = quadrant0(k);
-    t2s2(:,ishuf) = t2s2(k);
-    t2s3(:,ishuf) = t2s3(k);
-    initO(:,ishuf) = initO0(k);
+    sinitD(:,ishuf) = initD0(k);
+    st2s(:,ishuf) = t2s0(k);
+    sspotfound(:,ishuf) = spotfound0(k);
+    sdwellT(:,ishuf) = dwellT0(k);
+    squadrant(:,ishuf) = quadrant0(k);
+    sinitO(:,ishuf) = initO0(k);
+    sinitOb(:,ishuf)=initOb0(k);
+    sspotring(:,ishuf)=spotring0(k);
+    sdtraveled(:,ishuf)=dtraveled0(k);
     
     fprintf('shuffle %d/%d complete \n',ishuf,nshuf);
     toc;

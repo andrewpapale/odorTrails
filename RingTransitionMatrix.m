@@ -132,12 +132,12 @@ radii=radius./(11.2);
 
 for iR=1:nR
     for iQ=1:nR
-%                 Cfound(iR,iQ)=corr2(foundR(iR,:),foundR(iQ,:));
-%                 Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
-%                 Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
-        Cfound(iR,iQ) = mi(foundR(iR,:)',foundR(iQ,:)');
-        Cnot(iR,iQ) = mi(notR(iR,:)',notR(iQ,:)');
-        Crand(iR,iQ)=mi(randR(iR,:)',randR(iQ,:)');
+                Cfound(iR,iQ)=corr2(foundR(iR,:),foundR(iQ,:));
+                %Cnot(iR,iQ) = corr2(notR(iR,:),notR(iQ,:));
+                %Crand(iR,iQ)= corr2(randR(iR,:),randR(iQ,:));
+%         Cfound(iR,iQ) = mi(foundR(iR,:)',foundR(iQ,:)');
+%         Cnot(iR,iQ) = mi(notR(iR,:)',notR(iQ,:)');
+%         Crand(iR,iQ)=mi(randR(iR,:)',randR(iQ,:)');
     end
 end
 
@@ -151,22 +151,22 @@ title('Spot found','fontsize',21);
 xlabel('radius (cm)','fontsize',21);
 ylabel('radius (cm)','fontsize',21);
 set(gca,'fontsize',18);
-subplot(1,3,2);
-pcolor(radii,radii,Cnot); shading flat;
-%caxis([-0.5 1]);
-caxis([0 4]);
-colorbar;
-title('Spot Missed','fontsize',21);
-xlabel('radius (cm)','fontsize',21);
-set(gca,'fontsize',18);
-subplot(1,3,3);
-pcolor(radii,radii,Crand); shading flat;
-%caxis([-0.5 0.5]);
-caxis([0 4]);
-colorbar;
-title('Random','fontsize',21);
-xlabel('radius (cm)','fontsize',21);
-set(gca,'fontsize',18);
+% subplot(1,3,2);
+% pcolor(radii,radii,Cnot); shading flat;
+% %caxis([-0.5 1]);
+% caxis([0 4]);
+% colorbar;
+% title('Spot Missed','fontsize',21);
+% xlabel('radius (cm)','fontsize',21);
+% set(gca,'fontsize',18);
+% subplot(1,3,3);
+% pcolor(radii,radii,Crand); shading flat;
+% %caxis([-0.5 0.5]);
+% caxis([0 4]);
+% colorbar;
+% title('Random','fontsize',21);
+% xlabel('radius (cm)','fontsize',21);
+% set(gca,'fontsize',18);
 
 F = figure(2); clf;
 plot(radii,nanmean(Cfound,2),'linewidth',2);

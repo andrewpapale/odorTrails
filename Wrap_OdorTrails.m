@@ -1,4 +1,4 @@
-function [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z,Nmm,nLen,nanfs,ALorKP] = Wrap_OdorTrails
+function [weight,perweight,x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z,Nmm,nLen,nanfs,ALorKP,videoName] = Wrap_OdorTrails
 % [x,y,V,dT,Xp,Yp,xT1,yT1,idphi,nidphi,mouse,trial,sess,conc,frame,nearX,nearY,nx,ny,nV,mouseT,sessT,mouse1,sess1,mouseName1,mouseName2,dnT,Xnp,Ynp,bait,Y,Z,Nmm,nLen,nanfs,ALorKP] = Wrap_OdorTrails
 % 2017-07-03 AndyP
 % 2017-07-26 AndyP updated with foaw_diff, Tortuosity1 and zIdPhi1
@@ -91,10 +91,10 @@ homedir = cd;
 
 readXLS = true;
 pathType = 'spot';
-postSmoothing = 0.2; % s
+postSmoothing = 0.1; % s
 %window = 0.5; % s
 m = 50;
-d = 0.5;
+d = 0.2;
 dtime = 1/50; % Hz
 
 trial0 = [];
@@ -108,7 +108,11 @@ lastMouse = [];
 dateStr = [];
 bait0 = [];
 ALorKP0 = [];
-
+videoName = [];
+weight = [];
+perweight = [];
+positFiles = dir('*_positions.mat');
+iD=1;
 if readXLS
     
     % get trial numbers from xls sheet...
@@ -116,10 +120,11 @@ if readXLS
     cd('C:\Users\papalea\Documents\Data');
     %[num,text] = xlsread('Log_170427.xlsx',1,'A1:H176','basic'); % read xls sheet into matlab
     [num,text] = xlsread('KP_AL_CombinedLog.xlsx','A1:H231');
+    weightXLS = xlsread('KP_AL_CombinedLog.xlsx','I1:I231');
+    perweightXLS = xlsread('KP_AL_CombinedLog.xlsx','J1:J231');
     
-    for iS=1:size(text,1);
+    for iS=1:size(text,1)
         mousetemp = num(iS,2); % mice are always in second column, starting from row 1
-        
         for iT=1:5
             tempStr = text{iS,iT};
             switch pathType
@@ -150,15 +155,21 @@ if readXLS
                 otherwise
                     error('unknown pathType');
             end
-            if (strcmp(pathType,'spot') && ~strcmp(tempStr,'')) || (strcmp(pathType,'Y') && (~isepmty(k) || ~isepmty(k1) || ~isempty(k2)) && (isempty(k3) && isempty(k4)))
+            if (strcmp(pathType,'spot') && ~strcmp(tempStr,'')) || (strcmp(pathType,'Y') && (~isempty(k) || ~isempty(k1) || ~isempty(k2)) && (isempty(k3) && isempty(k4)))
                 goflag = true;
             else
                 goflag = false;
             end
             if goflag
+                datetemp = mat2str(num(iS,1));
+                datetemp = strcat('20',datetemp(1:2),'-',datetemp(3:4),'-',datetemp(5:6));
+                nametemp = strsplit(positFiles(iD).name,'-');
+                vidtemp = strcat(mat2str(mousetemp),'_',datetemp,'-',nametemp{4},'-0000.avi');
                 mouseName1 = cat(1,mouseName1,mousetemp);
+                videoName = cat(1,videoName,vidtemp);
                 dateStr = cat(1,dateStr,num(iS,1));
                 ALorKP0 = cat(1,ALorKP0,num(iS,3));
+                iD=iD+1;
                 %disp(mouse0);
                 %disp(tempStr);
                 trial0 = cat(1,trial0,iT); % trial 1 is in column 4, trial 2 in column 5, etc.
@@ -188,12 +199,16 @@ if readXLS
                 end
                 
                 kunbait = strfind(tempStr,'no');
-                if ~isempty(kunbait);
+                if ~isempty(kunbait)
                     bait0 = cat(1,bait0,0);
                     disp(tempStr);
                 else
                     bait0 = cat(1,bait0,1);
                 end
+                
+                weight = cat(1,weight,weightXLS(iS,1));
+                perweight = cat(1,perweight,perweightXLS(iS,1));
+                
             end
         end
     end
@@ -203,7 +218,7 @@ if readXLS
 end
 
 % get position and trail files
-positFiles = dir('*_positions.mat');
+positFiles = dir('*_positions.mat'); %redundant, I know
 trailFiles = dir('*-Odor-Trail.mat');
 startFiles = dir('*-StartFrame.mat');
 
@@ -335,6 +350,8 @@ Nmm = [];
 nLen = [];
 nanfs = [];
 ALorKP = [];
+Y = [];
+Z = [];
 
 for iD=1:nD
     cd(homedir);
@@ -413,15 +430,15 @@ for iD=1:nD
     frame = cat(1,frame,(1:length(x0))');
     
     % compute velocity
-    dx = foaw_diff(x0, dtime, m, d, postSmoothing);
-    dy = foaw_diff(y0, dtime, m, d, postSmoothing);
-    V0 = sqrt(dx.^2+dy.^2)./11.2;
-    V = cat(1,V,V0); % cm/s
+    dx = foaw_diff(x0,dtime,m,d,postSmoothing)./11.2;
+    dy = foaw_diff(y0,dtime,m,d,postSmoothing)./11.2;
+    V0 = sqrt(dx.^2+dy.^2);
+    V = cat(1,V,V0'); % cm/s
     
-    ndx = foaw_diff(nx0, dtime, m, d, postSmoothing);
-    ndy = foaw_diff(ny0, dtime, m, d, postSmoothing);
-    nV0 = sqrt(ndx.^2+ndy.^2)./11.2;
-    nV = cat(1,nV,nV0); % cm/s
+    ndx = foaw_diff(nx0,dtime,m,d,postSmoothing)./11.2;
+    ndy = foaw_diff(ny0,dtime,m,d,postSmoothing)./11.2;
+    nV0 = sqrt(ndx.^2+ndy.^2);
+    nV = cat(1,nV,nV0'); % cm/s
     
     % calculate distance from trail
     nP = length(x0);
@@ -430,7 +447,7 @@ for iD=1:nD
     dnT0 = nan(nP,1);
     In = nan(nP,1);
     
-    if strcmp(pathType,'spot')    
+    if strcmp(pathType,'spot')
         mX = nanmedian(xT0);
         mY = nanmedian(yT0);
         dT0 = sqrt((x0-mX).^2+(y0-mY).^2);
@@ -446,11 +463,11 @@ for iD=1:nD
     if strcmp(pathType,'spot')
     else
         Xp = cat(1,Xp,xT0(I));
-        Yp = cat(1,Yp,yT0(I));    
+        Yp = cat(1,Yp,yT0(I));
         Xnp = cat(1,Xnp,xT0(In));
         Ynp = cat(1,Ynp,yT0(In));
     end
-
+    
     %     C0 = Tortuosity1(dx,dy,dtime,m,d,postSmoothing);
     %     C = cat(1,C,C0);
     %
@@ -458,33 +475,33 @@ for iD=1:nD
     %     nC = cat(1,nC,nC0);
     
     
-%     [zz0,nL0] = SplineCurvature(nx0,ny0);
-%     zz = cat(1,zz,zz0);
-%     nL = cat(1,nL,nL0);
+    %     [zz0,nL0] = SplineCurvature(nx0,ny0);
+    %     zz = cat(1,zz,zz0);
+    %     nL = cat(1,nL,nL0);
     
-%     nT = length(xT0);
-%     %zdT0 = nan(size(nL0));
-%     zdnT0 = nan(size(nL0));
-%     for iP=1:nT
-%         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
-%     end
-%     zdnT = cat(1,zdnT,zdnT0);
-%     if readXLS
-%         zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1])); %#ok<UNRCH>
-%         zsess = cat(1,zsess,repmat(sess0(iD),[length(nL0),1])); %#ok<UNRCH>
-%         ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
-%         zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
-%         zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
-%     else
-%         zmouse = cat(1,zmouse,repmat(iM,[length(nL0),1]));
-%         zsess = cat(1,zsess,repmat(iS,[length(nL0),1]));
-%     end
+    %     nT = length(xT0);
+    %     %zdT0 = nan(size(nL0));
+    %     zdnT0 = nan(size(nL0));
+    %     for iP=1:nT
+    %         [zdnT0(iP),In(iP)] = nanmin(sqrt((zz0(iP,1)-xT0).^2+(zz0(iP,2)-yT0).^2));
+    %     end
+    %     zdnT = cat(1,zdnT,zdnT0);
+    %     if readXLS
+    %         zmouse = cat(1,zmouse,repmat(mouse0(iD),[length(nL0),1])); %#ok<UNRCH>
+    %         zsess = cat(1,zsess,repmat(sess0(iD),[length(nL0),1])); %#ok<UNRCH>
+    %         ztrial = cat(1,ztrial,repmat(trial0(iD),[length(nL0),1]));
+    %         zconc = cat(1,zconc,repmat(conc0(iD),[length(nL0),1]));
+    %         zbait = cat(1,zbait,repmat(bait0(iD),[length(nL0),1]));
+    %     else
+    %         zmouse = cat(1,zmouse,repmat(iM,[length(nL0),1]));
+    %         zsess = cat(1,zsess,repmat(iS,[length(nL0),1]));
+    %     end
     % compute idphi
     idphi0 = zIdPhi1(dx,dy,dtime,m,d,postSmoothing);
     nidphi0 = zIdPhi1(ndx,ndy,dtime,m,d,postSmoothing);
     
-    idphi = cat(1,idphi,idphi0);
-    nidphi = cat(1,nidphi,nidphi0);
+    idphi = cat(1,idphi,idphi0');
+    nidphi = cat(1,nidphi,nidphi0');
     
     %     zidphi= cat(1,zidphi,nanzscore(abs(idphi0)));
     %     znidphi= cat(1,znidphi,nanzscore(abs(nidphi0)));
@@ -556,31 +573,31 @@ for iD=1:nD
     end
     
 end
-
-if strcmp(pathType,'Y')
-    Y.dTarm = dTarm;
-    Y.dnTarm = dnTarm;
-    Y.theta1 = theta1;
-    Y.theta2 = theta2;
-    Y.theta3 = theta3;
-    Y.inR = inR;
-    Y.dotA = dotA;
-    Y.dotB = dotB;
-    Y.dotC = dotC;
-    Y.dTc = dTc;
-    Y.dnTc = dnTc;
-    Y.Yarm = Yarm;
-else
-    Y = [];
-end
-
-Z.zmouse = zmouse;
-Z.zbait = zbait;
-Z.zconc = zconc;
-Z.ztrial = ztrial;
-Z.zdnT = zdnT;
-Z.zz = zz;
-Z.nL = nL;
+%
+% if strcmp(pathType,'Y')
+%     Y.dTarm = dTarm;
+%     Y.dnTarm = dnTarm;
+%     Y.theta1 = theta1;
+%     Y.theta2 = theta2;
+%     Y.theta3 = theta3;
+%     Y.inR = inR;
+%     Y.dotA = dotA;
+%     Y.dotB = dotB;
+%     Y.dotC = dotC;
+%     Y.dTc = dTc;
+%     Y.dnTc = dnTc;
+%     Y.Yarm = Yarm;
+% else
+%     Y = [];
+% end
+% %
+% % Z.zmouse = zmouse;
+% % Z.zbait = zbait;
+% % Z.zconc = zconc;
+% % Z.ztrial = ztrial;
+% % Z.zdnT = zdnT;
+% % Z.zz = zz;
+% % Z.nL = nL;
 
 
 end
